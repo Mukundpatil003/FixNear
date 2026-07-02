@@ -1,7 +1,7 @@
 const express = require("express");
 
 const router = express.Router();
-
+const authorizeRoles = require("../middleware/roleMiddleware");
 
 
 const {protect} = require("../middleware/authMiddleware");
@@ -14,6 +14,17 @@ const {
 
 router.post("/become-provider", protect, becomeProvider);
 router.get("/nearby", getNearbyProviders);
-router.get("/profile", protect, getProviderProfile);
-router.put("/profile", protect, updateProviderProfile);
+router.get(
+  "/profile",
+  protect,
+  authorizeRoles("provider"),
+  getProviderProfile
+);
+
+router.put(
+  "/profile",
+  protect,
+  authorizeRoles("provider"),
+  updateProviderProfile
+);
 module.exports = router;

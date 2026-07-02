@@ -8,11 +8,17 @@ const {
 } = require("../controllers/categoryController");
 
 const {protect} = require("../middleware/authMiddleware");
+const authorizeRoles = require("../middleware/roleMiddleware");
 
-// Admin route (abhi protect use karenge, baad me admin middleware lagayenge)
-router.post("/", protect, createCategory);
+// Only Admin can create category
+router.post(
+  "/",
+  protect,
+  authorizeRoles("admin"),
+  createCategory
+);
 
-// Public route
+// Everyone can see categories
 router.get("/", getCategories);
 
 module.exports = router;

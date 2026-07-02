@@ -1,8 +1,10 @@
+require("dotenv").config();
 const express = require("express");
 const dotenv = require("dotenv");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
-const providerRoutes = require("./routes/providerRoutes");
+
+
 
 
 const dns = require("dns");
@@ -14,6 +16,12 @@ const connectDB = require("./config/db");
 const authRoutes = require("./routes/authRoutes");
 const dashboardRoutes = require("./routes/dashboardRoutes");
 const categoryRoutes = require("./routes/categoryRoutes");
+const providerRoutes = require("./routes/providerRoutes");
+const serviceRequestRoutes = require("./routes/serviceRequestRoutes");
+const uploadRoutes = require("./routes/uploadRoutes");
+const bookingRoutes = require("./routes/bookingRoutes");
+
+
 
 dotenv.config();
 
@@ -28,6 +36,9 @@ app.use(cookieParser());
 app.use("/api/provider", providerRoutes);
 
 app.use("/api/categories", categoryRoutes);
+app.use("/api/service-request", serviceRequestRoutes);
+app.use("/api/upload", uploadRoutes);
+app.use("/api/booking", bookingRoutes);
 
 
 app.use(
