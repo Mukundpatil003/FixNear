@@ -68,6 +68,8 @@ const providerSchema = new mongoose.Schema(
       default: 0,
     },
 
+
+
     isAvailable: {
       type: Boolean,
       default: true,
@@ -77,6 +79,10 @@ const providerSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+        isBlocked: {
+    type: Boolean,
+    default: false
+},
   },
   {
     timestamps: true,

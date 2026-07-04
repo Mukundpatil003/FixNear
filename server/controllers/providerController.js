@@ -1,4 +1,5 @@
 const Provider = require("../models/Provider");
+const Booking = require("../models/Booking");
 
 const becomeProvider = async (req, res) => {
   try {
@@ -63,20 +64,29 @@ const getNearbyProviders = async (req, res) => {
         message: "Latitude and Longitude are required.",
       });
     }
+    
+const providers = await Provider.find({
+  ...(service && { service }),
 
-    const providers = await Provider.find({
-      ...(service && { service }),
-      isAvailable: true,
-      location: {
-        $near: {
-          $geometry: {
-            type: "Point",
-            coordinates: [Number(longitude), Number(latitude)],
-          },
-          $maxDistance: 10000, // 10 KM
-        },
+  isAvailable: true,
+
+  isBlocked: false,
+
+  isVerified: true,
+
+  location: {
+    $near: {
+      $geometry: {
+        type: "Point",
+        coordinates: [
+          Number(longitude),
+          Number(latitude),
+        ],
       },
-    }).populate("user", "fullName email profileImage phone");
+      $maxDistance: 10000,
+    },
+  },
+}).populate("user", "name email phone profileImage");
 
     res.status(200).json({
       success: true,
@@ -172,9 +182,63 @@ const updateProviderProfile = async (req, res) => {
   }
 };
 
+const getProviderDashboard = async (req, res) => {
+  try {
+
+    const provider = await Provider.findOne({
+      user: req.user._id,
+    });
+
+    if (!provider) {
+      return res.status(404).json({
+        success: false,
+        message: "Provider not found",
+      });
+    }
+
+    const totalBookings = await Booking.countDocuments({
+      provider: provider._id,
+    });
+
+    const pendingBookings = await Booking.countDocuments({
+      provider: provider._id,
+      status: {
+        $in: ["Accepted", "On The Way", "Working"],
+      },
+    });
+
+    const completedBookings = await Booking.countDocuments({
+      provider: provider._id,
+      status: "Completed",
+    });
+
+    res.status(200).json({
+      success: true,
+      dashboard: {
+        totalBookings,
+        pendingBookings,
+        completedBookings,
+        rating: provider.rating,
+        totalReviews: provider.totalReviews,
+        isAvailable: provider.isAvailable,
+      },
+    });
+
+  } catch (error) {
+
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+
+  }
+};
+
 module.exports = {
   becomeProvider,
   getNearbyProviders,
   getProviderProfile,
   updateProviderProfile,
+  
+  getProviderDashboard,
 };

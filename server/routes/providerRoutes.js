@@ -10,6 +10,7 @@ const {
   getNearbyProviders,
   getProviderProfile,
   updateProviderProfile,
+  getProviderDashboard,
 } = require("../controllers/providerController");
 
 router.post("/become-provider", protect, becomeProvider);
@@ -26,5 +27,12 @@ router.put(
   protect,
   authorizeRoles("provider"),
   updateProviderProfile
+);
+
+router.get(
+  "/dashboard",
+  protect,
+  authorizeRoles("provider"),
+  getProviderDashboard
 );
 module.exports = router;

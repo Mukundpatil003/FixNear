@@ -86,7 +86,45 @@ const findNearbyProviders = async (req, res) => {
   }
 };
 
+const getPendingRequests = async (req, res) => {
+  try {
+
+    const provider = await Provider.findOne({
+      user: req.user._id,
+    });
+
+    if (!provider) {
+      return res.status(404).json({
+        success: false,
+        message: "Provider not found",
+      });
+    }
+
+    const requests = await ServiceRequest.find({
+      status: "Pending",
+      service: provider.service,
+    })
+      .populate("customer", "name phone")
+      .sort({ createdAt: -1 });
+
+    res.status(200).json({
+      success: true,
+      total: requests.length,
+      requests,
+    });
+
+  } catch (error) {
+
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+
+  }
+};
+
 module.exports = {
   createServiceRequest,
   findNearbyProviders,
+  getPendingRequests,
 };

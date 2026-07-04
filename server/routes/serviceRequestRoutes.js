@@ -6,18 +6,24 @@ const {protect} = require("../middleware/authMiddleware");
 const authorizeRoles= require("../middleware/roleMiddleware");
 
 const {
- createServiceRequest,
- findNearbyProviders
+  createServiceRequest,
+  findNearbyProviders,
+  getPendingRequests,
 } = require("../controllers/serviceRequestController");
 
 // Sirf customer service request create kar sakta hai
 router.post(
   "/",
   protect,
-  authorizeRoles("customer"),
+  authorizeRoles("customer", "provider"),
   createServiceRequest
 );
 
 router.get("/providers", protect, findNearbyProviders);
-
+router.get(
+  "/pending",
+  protect,
+  authorizeRoles("provider"),
+  getPendingRequests
+);
 module.exports = router;
