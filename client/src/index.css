@@ -1,0 +1,23 @@
+@import "tailwindcss";
+
+/* 1. Use the universal selector (*) and include pseudo-elements */
+ /* *
+ {
+  margin: 0px;
+  padding: 0px;
+  box-sizing: border-box;
+} */
+
+/* 2. Set full width and prevent accidental horizontal scrolling */
+html,
+body,
+#root {
+  width: 100%;
+  overflow-x: hidden;
+}
+
+/* 3. Base typography and background */
+body {
+  font-family: "Poppins", sans-serif;
+  background: #ffffff;
+}
