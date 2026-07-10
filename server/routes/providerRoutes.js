@@ -11,6 +11,8 @@ const {
   getProviderProfile,
   updateProviderProfile,
   getProviderDashboard,
+  getTopProviders,
+  verifyProvider,
 } = require("../controllers/providerController");
 
 router.post("/become-provider", protect, becomeProvider);
@@ -34,5 +36,12 @@ router.get(
   protect,
   authorizeRoles("provider"),
   getProviderDashboard
+);
+router.get("/top", getTopProviders);
+router.put(
+  "/verify/:id",
+  protect,
+  authorizeRoles("admin"),
+  verifyProvider
 );
 module.exports = router;

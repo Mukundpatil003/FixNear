@@ -233,12 +233,62 @@ const getProviderDashboard = async (req, res) => {
 
   }
 };
+const getTopProviders = async (req, res) => {
+  try {
+    const providers = await Provider.find({
+      isAvailable: true,
+      isVerified: true,
+      isBlocked: false,
+    })
+      .populate("user", "name")
+      .sort({ rating: -1 })
+      .limit(6);
+
+    res.status(200).json({
+      success: true,
+      providers,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+const verifyProvider = async (req, res) => {
+  try {
+    const provider = await Provider.findById(req.params.id);
+
+    if (!provider) {
+      return res.status(404).json({
+        success: false,
+        message: "Provider not found",
+      });
+    }
+
+    provider.isVerified = true;
+
+    await provider.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Provider verified successfully",
+      provider,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
 
 module.exports = {
   becomeProvider,
   getNearbyProviders,
+  getTopProviders,
+  verifyProvider,
   getProviderProfile,
   updateProviderProfile,
-  
   getProviderDashboard,
 };

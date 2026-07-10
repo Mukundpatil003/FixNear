@@ -1,8 +1,37 @@
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { categories } from "../../data/categories";
+import { getCategories } from "../../api/categoryApi";
 import CategoryCard from "./CategoryCard";
 
 const PopularCategories = () => {
+  const [categories, setCategories] = useState([]);
+
+  const [loading, setLoading] = useState(true);
+
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    fetchCategories();
+  }, []);
+
+  const fetchCategories = async () => {
+    try {
+      setLoading(true);
+
+      const data = await getCategories();
+
+      if (data.success) {
+        setCategories(data.categories);
+      }
+    } catch (err) {
+      console.error(err);
+
+      setError("Failed to load categories");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <section className="bg-white py-24">
 
@@ -32,28 +61,73 @@ const PopularCategories = () => {
 
         </motion.div>
 
+        {/* Loading */}
+
+        {loading && (
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+
+            {Array.from({ length: 8 }).map((_, index) => (
+              <div
+                key={index}
+                className="h-[185px] animate-pulse rounded-3xl bg-gray-100"
+              />
+            ))}
+
+          </div>
+        )}
+
+        {/* Error */}
+
+        {!loading && error && (
+          <div className="py-10 text-center text-lg font-semibold text-red-500">
+            {error}
+          </div>
+        )}
+
+        {/* Empty */}
+
+        {!loading && !error && categories.length === 0 && (
+          <div className="py-10 text-center text-lg text-gray-500">
+            No Categories Found
+          </div>
+        )}
+
         {/* Categories */}
 
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        {!loading && !error && categories.length > 0 && (
 
-          {categories.map((item, index) => (
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
 
-            <motion.div
-              key={item.id}
-              initial={{ opacity: 0, y: 50 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{
-                duration: 0.5,
-                delay: index * 0.1,
-              }}
-            >
-              <CategoryCard item={item} />
-            </motion.div>
+            {categories.map((item, index) => (
 
-          ))}
+              <motion.div
+                key={item._id}
+                initial={{
+                  opacity: 0,
+                  y: 40,
+                }}
+                whileInView={{
+                  opacity: 1,
+                  y: 0,
+                }}
+                viewport={{
+                  once: true,
+                }}
+                transition={{
+                  duration: 0.5,
+                  delay: index * 0.08,
+                }}
+              >
 
-        </div>
+                <CategoryCard item={item} />
+
+              </motion.div>
+
+            ))}
+
+          </div>
+
+        )}
 
       </div>
 

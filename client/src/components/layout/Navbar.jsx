@@ -51,11 +51,11 @@ const Navbar = () => {
         <div className="flex items-center gap-5">
 
           <button className="text-[15px] font-semibold text-gray-700 transition-all duration-300 hover:text-blue-600">
-            Login
+            <a href="http://localhost:5173/login">Login</a>
           </button>
 
           <button className="rounded-xl bg-blue-600 px-6 py-3 text-[15px] font-semibold text-white shadow-md transition-all duration-300 hover:-translate-y-1 hover:bg-blue-700 hover:shadow-xl">
-            Register
+           <a href="http://localhost:5173/register">Register</a>
           </button>
 
         </div>

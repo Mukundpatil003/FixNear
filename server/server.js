@@ -1,5 +1,5 @@
-
 require("dotenv").config();
+
 const express = require("express");
 const dotenv = require("dotenv");
 const cors = require("cors");
@@ -53,9 +53,14 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
+const allowedOrigins = [
+  "http://localhost:5173",
+  "http://localhost:5174",
+];
+
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: allowedOrigins,
     credentials: true,
   })
 );

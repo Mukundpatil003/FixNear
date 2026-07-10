@@ -1,7 +1,10 @@
 import { motion } from "framer-motion";
+import categoryIcons from "../../utils/categoryIcons";
+import { FaTools } from "react-icons/fa";
 
 const CategoryCard = ({ item }) => {
-  const Icon = item.icon;
+
+  const Icon = categoryIcons[item.name] || FaTools;
 
   return (
     <motion.div
@@ -10,7 +13,7 @@ const CategoryCard = ({ item }) => {
         scale: 1.02,
       }}
       transition={{ duration: 0.3 }}
-      className="group relative flex h-[185px] cursor-pointer flex-col items-center justify-center overflow-hidden rounded-3xl border border-gray-100 bg-white p-6 shadow-md transition-all duration-500 hover:border-blue-100 hover:shadow-xl"
+      className="group relative flex h-[220px] cursor-pointer flex-col items-center justify-center overflow-hidden rounded-3xl border border-gray-100 bg-white p-6 shadow-md transition-all duration-500 hover:border-blue-100 hover:shadow-xl"
     >
       {/* Glow */}
 
@@ -27,16 +30,14 @@ const CategoryCard = ({ item }) => {
       {/* Title */}
 
       <h3 className="relative z-10 text-center text-lg font-bold text-gray-900 transition-all duration-300 group-hover:text-blue-600">
-        {item.title}
+        {item.name}
       </h3>
 
       {/* Subtitle */}
 
       <p className="relative z-10 mt-2 text-center text-xs leading-5 text-gray-500">
-        Verified Professionals
+        {item.description || "Verified Professionals"}
       </p>
-
-      {/* Bottom Line */}
 
       <div className="mt-5 h-1 w-10 rounded-full bg-blue-100 transition-all duration-300 group-hover:w-20 group-hover:bg-blue-600"></div>
 

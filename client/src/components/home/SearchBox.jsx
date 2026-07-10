@@ -1,8 +1,81 @@
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { FiSearch, FiMapPin } from "react-icons/fi";
-import { IoChevronDown } from "react-icons/io5";
+import { getCategories } from "../../api/categoryApi";
+import { useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
 
 const SearchBox = () => {
+  const navigate = useNavigate();
+
+  const [categories, setCategories] = useState([]);
+
+  const [service, setService] = useState("");
+
+  const [latitude, setLatitude] = useState("");
+
+  const [longitude, setLongitude] = useState("");
+
+  const [locationText, setLocationText] = useState(
+    "Current Location"
+  );
+
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    loadCategories();
+  }, []);
+
+  const loadCategories = async () => {
+    try {
+      const data = await getCategories();
+
+      if (data.success) {
+        setCategories(data.categories);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const getCurrentLocation = () => {
+    if (!navigator.geolocation) {
+      toast.error("Geolocation not supported");
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setLatitude(position.coords.latitude);
+
+        setLongitude(position.coords.longitude);
+
+        setLocationText("Current Location");
+
+        toast.success("Location detected");
+      },
+      () => {
+        toast.error("Location permission denied");
+      }
+    );
+  };
+
+  const handleSearch = () => {
+    if (!service) {
+      toast.error("Please select a service");
+      return;
+    }
+
+    if (!latitude || !longitude) {
+      toast.error("Please choose your location");
+      return;
+    }
+
+    navigate(
+      `/providers?service=${service}&latitude=${latitude}&longitude=${longitude}`
+    );
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 30 }}
@@ -10,79 +83,70 @@ const SearchBox = () => {
       transition={{ delay: 0.4, duration: 0.6 }}
       className="mt-10 w-full"
     >
-      <div className="flex w-full items-center overflow-hidden rounded-[24px] border border-gray-200 bg-white p-2 shadow-[0_20px_45px_rgba(15,23,42,0.08)]">
+      <div className="flex flex-wrap items-center gap-4 rounded-3xl border border-gray-200 bg-white p-4 shadow-xl">
 
         {/* Service */}
 
-        <div className="group flex flex-1 cursor-pointer items-center gap-4 rounded-2xl px-5 py-3 transition-all duration-300 hover:bg-blue-50">
+        <div className="flex flex-1 items-center gap-3 rounded-2xl bg-gray-50 px-4 py-3">
 
-          <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-blue-100">
+          <FiSearch className="text-blue-600" size={22} />
 
-            <FiSearch
-              size={22}
-              className="text-blue-600"
-            />
-
-          </div>
-
-          <div className="flex-1">
-
-            <p className="text-[11px] font-semibold uppercase tracking-wider text-gray-400">
-              Service
-            </p>
-
-            <p className="mt-1 whitespace-nowrap text-[17px] font-semibold text-gray-800">
+          <select
+            value={service}
+            onChange={(e) =>
+              setService(e.target.value)
+            }
+            className="w-full bg-transparent outline-none"
+          >
+            <option value="">
               Choose Service
-            </p>
+            </option>
 
-          </div>
+            {categories.map((item) => (
+              <option
+                key={item._id}
+                value={item.name}
+              >
+                {item.name}
+              </option>
+            ))}
 
-          <IoChevronDown
-            size={20}
-            className="text-gray-400 transition duration-300 group-hover:rotate-180"
-          />
+          </select>
 
         </div>
-
-        {/* Divider */}
-
-        <div className="h-10 w-px bg-gray-200"></div>
 
         {/* Location */}
 
-        <div className="group flex flex-1 cursor-pointer items-center gap-4 rounded-2xl px-5 py-3 transition-all duration-300 hover:bg-blue-50">
+        <button
+          onClick={getCurrentLocation}
+          className="flex flex-1 items-center gap-3 rounded-2xl bg-gray-50 px-4 py-3 transition hover:bg-blue-50"
+        >
 
-          <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-blue-100">
+          <FiMapPin
+            className="text-blue-600"
+            size={22}
+          />
 
-            <FiMapPin
-              size={22}
-              className="text-blue-600"
-            />
+          <span className="truncate">
+            {locationText}
+          </span>
 
-          </div>
+        </button>
 
-          <div className="flex-1">
-
-            <p className="text-[11px] font-semibold uppercase tracking-wider text-gray-400">
-              Location
-            </p>
-
-            <p className="mt-1 whitespace-nowrap text-[17px] font-semibold text-gray-800">
-              Enter Location
-            </p>
-
-          </div>
-
-        </div>
-
-        {/* Button */}
+        {/* Search */}
 
         <motion.button
-          whileHover={{ scale: 1.03 }}
-          whileTap={{ scale: 0.97 }}
-          className="ml-2 flex h-[50px] w-[130px] flex-shrink-0 items-center justify-center rounded-[18px] bg-gradient-to-r from-blue-600 to-blue-700 text-[17px] font-semibold text-white shadow-lg transition-all duration-300 hover:shadow-blue-300"
+          whileHover={{
+            scale: 1.03,
+          }}
+          whileTap={{
+            scale: 0.97,
+          }}
+          onClick={handleSearch}
+          disabled={loading}
+          className="rounded-2xl bg-gradient-to-r from-blue-600 to-blue-700 px-8 py-4 font-semibold text-white shadow-lg"
         >
-          Search
+          {loading ? "Searching..." : "Search"}
         </motion.button>
 
       </div>

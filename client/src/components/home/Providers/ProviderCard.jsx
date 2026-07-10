@@ -5,8 +5,19 @@ import {
   FaBriefcase,
 } from "react-icons/fa";
 import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 
 const ProviderCard = ({ provider }) => {
+  const navigate = useNavigate();
+
+  const handleBookNow = () => {
+    navigate("/service-request", {
+      state: {
+        provider,
+      },
+    });
+  };
+
   return (
     <motion.div
       whileHover={{
@@ -21,8 +32,11 @@ const ProviderCard = ({ provider }) => {
       <div className="relative h-60 overflow-hidden bg-gray-100">
 
         <img
-          src={provider.image}
-          alt={provider.name}
+          src={
+            provider.profileImage ||
+            "https://placehold.co/600x400?text=Provider"
+          }
+          alt={provider.user?.name}
           className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
         />
 
@@ -40,7 +54,7 @@ const ProviderCard = ({ provider }) => {
 
         {/* Online */}
 
-        {provider.online && (
+        {provider.isAvailable && (
           <div className="absolute right-4 top-4 rounded-full bg-green-500 px-3 py-2 text-[11px] font-bold uppercase tracking-wide text-white shadow-lg">
             ● Online
           </div>
@@ -52,14 +66,14 @@ const ProviderCard = ({ provider }) => {
 
       <div className="space-y-4 p-6">
 
-        {/* Name + Rating */}
+        {/* Name */}
 
         <div className="flex items-start justify-between">
 
           <div>
 
             <h3 className="text-xl font-bold text-gray-900">
-              {provider.name}
+              {provider.user?.name}
             </h3>
 
             <p className="mt-1 text-sm font-medium text-blue-600">
@@ -73,7 +87,7 @@ const ProviderCard = ({ provider }) => {
             <FaStar className="text-sm text-yellow-500" />
 
             <span className="text-sm font-bold text-gray-800">
-              {provider.rating}
+              {Number(provider.rating).toFixed(1)}
             </span>
 
           </div>
@@ -86,17 +100,17 @@ const ProviderCard = ({ provider }) => {
 
           <FaBriefcase className="text-blue-600" />
 
-          <span>{provider.experience}</span>
+          <span>{provider.experience} Years Experience</span>
 
         </div>
 
-        {/* Location */}
+        {/* Address */}
 
         <div className="flex items-center gap-2 text-sm text-gray-500">
 
           <FaMapMarkerAlt className="text-red-500" />
 
-          <span>{provider.location}</span>
+          <span>{provider.address}</span>
 
         </div>
 
@@ -111,19 +125,19 @@ const ProviderCard = ({ provider }) => {
             </p>
 
             <h4 className="mt-1 text-lg font-bold text-gray-900">
-              {provider.reviews}
+              {provider.totalReviews}
             </h4>
 
           </div>
 
-          <div className="text-center border-l border-gray-200">
+          <div className="border-l border-gray-200 text-center">
 
             <p className="text-xs uppercase tracking-wide text-gray-400">
               Jobs
             </p>
 
             <h4 className="mt-1 text-lg font-bold text-gray-900">
-              {provider.jobs}+
+              0+
             </h4>
 
           </div>
@@ -141,7 +155,7 @@ const ProviderCard = ({ provider }) => {
             </p>
 
             <h2 className="mt-1 text-3xl font-extrabold text-blue-600">
-              {provider.price}
+              ₹{provider.pricePerHour}/hr
             </h2>
 
           </div>
@@ -149,6 +163,7 @@ const ProviderCard = ({ provider }) => {
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.96 }}
+            onClick={handleBookNow}
             className="rounded-xl bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-3 text-sm font-semibold text-white shadow-lg transition-all duration-300 hover:shadow-blue-300"
           >
             Book Now
