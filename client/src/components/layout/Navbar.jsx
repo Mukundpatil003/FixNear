@@ -38,7 +38,7 @@ const Navbar = () => {
           </a>
 
           <a
-            href="#"
+            href="http://localhost:5173/provider/profile"
             className="text-[15px] font-medium text-gray-600 transition-all duration-300 hover:text-blue-600"
           >
             Become a Provider

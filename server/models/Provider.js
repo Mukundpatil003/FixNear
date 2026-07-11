@@ -53,10 +53,10 @@ const providerSchema = new mongoose.Schema(
       default: "",
     },
 
-    profileImage: {
-      type: String,
-      default: "",
-    },
+    // profileImage: {
+    //   type: String,
+    //   default: "",
+    // },
 
     rating: {
       type: Number,

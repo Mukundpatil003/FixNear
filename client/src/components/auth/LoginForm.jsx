@@ -10,10 +10,14 @@ import {
 import { FcGoogle } from "react-icons/fc";
 import { Link, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
+
 import { loginUser } from "../../api/authApi";
+import useAuth from "../../hooks/useAuth";
 
 const LoginForm = () => {
   const navigate = useNavigate();
+
+  const { login } = useAuth();
 
   const [showPassword, setShowPassword] = useState(false);
 
@@ -45,23 +49,32 @@ const LoginForm = () => {
 
       toast.success(data.message);
 
-      // Optional
+      // Save JWT Token
       if (data.token) {
         localStorage.setItem("token", data.token);
       }
 
+      // Save User in Auth Context
       if (data.user) {
-        localStorage.setItem(
-          "user",
-          JSON.stringify(data.user)
-        );
+        login(data.user);
       }
 
-      navigate("/");
+      // Redirect based on Role
+      switch (data.user.role) {
+        case "provider":
+          navigate("/provider/dashboard");
+          break;
+
+        case "admin":
+          navigate("/admin/dashboard");
+          break;
+
+        default:
+          navigate("/");
+      }
     } catch (error) {
       toast.error(
-        error?.response?.data?.message ||
-          "Login Failed"
+        error?.response?.data?.message || "Login Failed"
       );
     } finally {
       setLoading(false);
@@ -146,9 +159,7 @@ const LoginForm = () => {
 
               <button
                 type="button"
-                onClick={() =>
-                  setShowPassword(!showPassword)
-                }
+                onClick={() => setShowPassword(!showPassword)}
               >
                 {showPassword ? (
                   <FiEyeOff className="text-2xl text-gray-400" />

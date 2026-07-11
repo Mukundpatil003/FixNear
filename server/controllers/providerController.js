@@ -1,8 +1,14 @@
 const Provider = require("../models/Provider");
 const Booking = require("../models/Booking");
+const User = require("../models/User");
+const mongoose = require("mongoose");
 
 const becomeProvider = async (req, res) => {
+  const session = await mongoose.startSession();
+
   try {
+    session.startTransaction();
+
     const {
       service,
       experience,
@@ -14,86 +20,75 @@ const becomeProvider = async (req, res) => {
       description,
     } = req.body;
 
-    // Check if already a provider
     const existingProvider = await Provider.findOne({
       user: req.user._id,
-    });
+    }).session(session);
 
     if (existingProvider) {
+      await session.abortTransaction();
+      session.endSession();
+
       return res.status(400).json({
         success: false,
         message: "You are already registered as a provider.",
       });
     }
 
-    const provider = await Provider.create({
-      user: req.user._id,
-      service,
-      experience,
-      phone,
-      address,
-      location: {
-        type: "Point",
-        coordinates: [longitude, latitude],
-      },
-      pricePerHour,
-      description,
-    });
+    const provider = await Provider.create(
+      [
+        {
+          user: req.user._id,
+          service,
+          experience,
+          phone,
+          address,
+          location: {
+            type: "Point",
+            coordinates: [
+              Number(longitude),
+              Number(latitude),
+            ],
+          },
+          pricePerHour,
+          description,
+          rating: 0,
+          totalReviews: 0,
+          isAvailable: true,
+          isVerified: false,
+          isBlocked: false,
+        },
+      ],
+      { session }
+    );
+
+    const updatedUser =
+      await User.findByIdAndUpdate(
+        req.user._id,
+        {
+          role: "provider",
+        },
+        {
+          new: true,
+          session,
+        }
+      );
+
+    await session.commitTransaction();
+
+    session.endSession();
 
     res.status(201).json({
       success: true,
-      message: "Provider profile created successfully.",
-      provider,
+      message:
+        "Provider profile created successfully.",
+      provider: provider[0],
+      user: updatedUser,
     });
   } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: error.message,
-    });
-  }
-};
+    await session.abortTransaction();
 
+    session.endSession();
 
-const getNearbyProviders = async (req, res) => {
-  try {
-    const { longitude, latitude, service } = req.query;
-
-    if (!longitude || !latitude) {
-      return res.status(400).json({
-        success: false,
-        message: "Latitude and Longitude are required.",
-      });
-    }
-    
-const providers = await Provider.find({
-  ...(service && { service }),
-
-  isAvailable: true,
-
-  isBlocked: false,
-
-  isVerified: true,
-
-  location: {
-    $near: {
-      $geometry: {
-        type: "Point",
-        coordinates: [
-          Number(longitude),
-          Number(latitude),
-        ],
-      },
-      $maxDistance: 10000,
-    },
-  },
-}).populate("user", "name email phone profileImage");
-
-    res.status(200).json({
-      success: true,
-      total: providers.length,
-      providers,
-    });
-  } catch (error) {
     res.status(500).json({
       success: false,
       message: error.message,
@@ -105,7 +100,10 @@ const getProviderProfile = async (req, res) => {
   try {
     const provider = await Provider.findOne({
       user: req.user._id,
-    }).populate("user", "-password");
+    }).populate(
+    "user",
+    "name email phone profileImage role"
+)
 
     if (!provider) {
       return res.status(404).json({
@@ -141,14 +139,15 @@ const updateProviderProfile = async (req, res) => {
     }
 
     const allowedFields = [
-      "service",
-      "experience",
-      "phone",
-      "address",
-      "pricePerHour",
-      "description",
-      "isAvailable",
-    ];
+  "service",
+  "experience",
+  "phone",
+  "address",
+  "pricePerHour",
+  "description",
+  "isAvailable",
+  "profileImage",
+];
 
     allowedFields.forEach((field) => {
       if (req.body[field] !== undefined) {
@@ -167,7 +166,21 @@ const updateProviderProfile = async (req, res) => {
       };
     }
 
+    // Update User Profile Image
+if (req.body.profileImage) {
+  await User.findByIdAndUpdate(
+    req.user._id,
+    {
+      profileImage: req.body.profileImage,
+    },
+    {
+      new: true,
+    }
+  );
+}
+
     await provider.save();
+    
 
     res.status(200).json({
       success: true,

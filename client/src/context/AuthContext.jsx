@@ -1,36 +1,39 @@
-import { createContext, useContext, useEffect, useState } from "react";
-import { getCurrentUser } from "../api/authApi";
+import { createContext, useEffect, useState } from "react";
 
-const AuthContext = createContext();
+export const AuthContext = createContext();
 
-export const AuthProvider = ({ children }) => {
+const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-
   const [loading, setLoading] = useState(true);
 
-  const loadUser = async () => {
-    try {
-      const data = await getCurrentUser();
+  useEffect(() => {
+    const storedUser = localStorage.getItem("user");
 
-      setUser(data.user);
-    } catch (error) {
-      setUser(null);
-    } finally {
-      setLoading(false);
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
     }
+
+    setLoading(false);
+  }, []);
+
+  const login = (userData) => {
+    localStorage.setItem("user", JSON.stringify(userData));
+    setUser(userData);
   };
 
-  useEffect(() => {
-    loadUser();
-  }, []);
+  const logout = () => {
+    localStorage.removeItem("user");
+    localStorage.removeItem("token");
+    setUser(null);
+  };
 
   return (
     <AuthContext.Provider
       value={{
         user,
-        setUser,
         loading,
-        loadUser,
+        login,
+        logout,
       }}
     >
       {children}
@@ -38,4 +41,4 @@ export const AuthProvider = ({ children }) => {
   );
 };
 
-export default AuthContext;
+export default AuthProvider;

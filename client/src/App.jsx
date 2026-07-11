@@ -3,7 +3,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 // Home
 import Home from "./pages/home/Home";
 
-// Auth Pages
+// Auth
 import Login from "./auth/Login";
 import Register from "./auth/Register";
 import ForgotPassword from "./auth/ForgotPassword";
@@ -12,74 +12,131 @@ import ResetPassword from "./auth/ResetPassword";
 
 // Provider Pages
 import ProvidersResult from "./pages/providers/ProvidersResult";
+import Dashboard from "./pages/providers/Dashboard";
+import PendingRequests from "./pages/providers/PendingRequests";
+import MyBookings from "./pages/providers/MyBookings";
+import Profile from "./pages/providers/Profile";
+import Notifications from "./pages/providers/Notifications";
 
 // Service Request
 import ServiceRequest from "./pages/service-request/ServiceRequest";
 
+// Protected Route
+import ProtectedRoute from "./routes/ProtectedRoute";
+
 function App() {
   return (
     <BrowserRouter>
-
       <Routes>
 
-        {/* Home */}
+        {/* Public Routes */}
 
         <Route
           path="/"
           element={<Home />}
         />
 
-        {/* Login */}
-
         <Route
           path="/login"
           element={<Login />}
         />
-
-        {/* Register */}
 
         <Route
           path="/register"
           element={<Register />}
         />
 
-        {/* Forgot Password */}
-
         <Route
           path="/forgot-password"
           element={<ForgotPassword />}
         />
-
-        {/* Verify OTP */}
 
         <Route
           path="/verify-otp"
           element={<VerifyOTP />}
         />
 
-        {/* Reset Password */}
-
         <Route
           path="/reset-password"
           element={<ResetPassword />}
         />
-
-        {/* Providers Result */}
 
         <Route
           path="/providers"
           element={<ProvidersResult />}
         />
 
-        {/* Service Request */}
+        {/* Customer */}
 
         <Route
           path="/service-request"
-          element={<ServiceRequest />}
+          element={
+            <ProtectedRoute
+              roles={["customer", "provider"]}
+            >
+              <ServiceRequest />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Provider */}
+
+        <Route
+          path="/provider/dashboard"
+          element={
+            <ProtectedRoute
+              roles={["provider"]}
+            >
+              <Dashboard />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/provider/pending"
+          element={
+            <ProtectedRoute
+              roles={["provider"]}
+            >
+              <PendingRequests />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/provider/bookings"
+          element={
+            <ProtectedRoute
+              roles={["provider"]}
+            >
+              <MyBookings />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/provider/profile"
+          element={
+            <ProtectedRoute
+              roles={["provider"]}
+            >
+              <Profile />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/provider/notifications"
+          element={
+            <ProtectedRoute
+              roles={["provider"]}
+            >
+              <Notifications />
+            </ProtectedRoute>
+          }
         />
 
       </Routes>
-
     </BrowserRouter>
   );
 }
