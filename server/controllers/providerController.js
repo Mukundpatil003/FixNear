@@ -61,29 +61,27 @@ const becomeProvider = async (req, res) => {
       { session }
     );
 
-    const updatedUser =
-      await User.findByIdAndUpdate(
-        req.user._id,
-        {
-          role: "provider",
-        },
-        {
-          new: true,
-          session,
-        }
-      );
+   const updatedUser = await User.findByIdAndUpdate(
+  req.user._id,
+  {
+    role: "provider",
+  },
+  {
+    new: true,
+    session,
+  }
+);
 
     await session.commitTransaction();
 
     session.endSession();
 
-    res.status(201).json({
-      success: true,
-      message:
-        "Provider profile created successfully.",
-      provider: provider[0],
-      user: updatedUser,
-    });
+  res.status(201).json({
+  success: true,
+  message: "Provider profile created successfully.",
+  provider,
+  user: updatedUser,
+});
   } catch (error) {
     await session.abortTransaction();
 
@@ -95,7 +93,56 @@ const becomeProvider = async (req, res) => {
     });
   }
 };
+const getNearbyProviders = async (req, res) => {
+  try {
+    const { longitude, latitude, service } = req.query;
 
+    if (!longitude || !latitude) {
+      return res.status(400).json({
+        success: false,
+        message: "Latitude and Longitude are required.",
+      });
+    }
+
+    const providers = await Provider.find({
+      ...(service && { service }),
+
+      isAvailable: true,
+      isVerified: true,
+      isBlocked: false,
+
+      location: {
+        $near: {
+          $geometry: {
+            type: "Point",
+            coordinates: [
+              Number(longitude),
+              Number(latitude),
+            ],
+          },
+          $maxDistance: 10000,
+        },
+      },
+    }).populate(
+      "user",
+      "name email phone profileImage"
+    );
+
+    res.status(200).json({
+      success: true,
+      total: providers.length,
+      providers,
+    });
+
+  } catch (error) {
+
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+
+  }
+};
 const getProviderProfile = async (req, res) => {
   try {
     const provider = await Provider.findOne({
@@ -138,7 +185,7 @@ const updateProviderProfile = async (req, res) => {
       });
     }
 
-    const allowedFields = [
+  const allowedFields = [
   "service",
   "experience",
   "phone",
@@ -146,9 +193,7 @@ const updateProviderProfile = async (req, res) => {
   "pricePerHour",
   "description",
   "isAvailable",
-  "profileImage",
 ];
-
     allowedFields.forEach((field) => {
       if (req.body[field] !== undefined) {
         provider[field] = req.body[field];
@@ -180,13 +225,30 @@ if (req.body.profileImage) {
 }
 
     await provider.save();
+
+const io = req.app.get("io");
+
+io.emit("providerAvailabilityChanged", {
+  providerId: provider._id.toString(),
+  isAvailable: provider.isAvailable,
+});
     
 
-    res.status(200).json({
-      success: true,
-      message: "Provider profile updated successfully.",
-      provider,
-    });
+ const updatedUser = await User.findById(req.user._id);
+ 
+res.status(200).json({
+  success: true,
+  message: "Provider profile updated successfully.",
+  provider,
+  user: {
+    id: updatedUser._id,
+    name: updatedUser.name,
+    email: updatedUser.email,
+    phone: updatedUser.phone,
+    role: updatedUser.role,
+    profileImage: updatedUser.profileImage,
+  },
+});
   } catch (error) {
     res.status(500).json({
       success: false,

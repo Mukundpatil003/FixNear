@@ -1,69 +1,217 @@
+import { Link, useNavigate } from "react-router-dom";
+import { useState, useRef, useEffect } from "react";
+import { FiUser, FiGrid, FiLogOut } from "react-icons/fi";
+
+import useAuth from "../../hooks/useAuth";
+import socket from "../../socket/socket";
 const Navbar = () => {
+
+  const { user, logout } = useAuth();
+
+  const navigate = useNavigate();
+  const [showMenu, setShowMenu] = useState(false);
+
+const menuRef = useRef(null);
+
+useEffect(() => {
+  const handler = (e) => {
+    if (menuRef.current && !menuRef.current.contains(e.target)) {
+      setShowMenu(false);
+    }
+  };
+
+  document.addEventListener("mousedown", handler);
+
+  return () =>
+    document.removeEventListener("mousedown", handler);
+}, []);
+
+const handleLogout = () => {
+  logout();
+
+  socket.disconnect();
+
+  localStorage.removeItem("token");
+
+  navigate("/login");
+};
+
+  const goDashboard = () => {
+  setShowMenu(false);
+
+  if (user.role === "customer") {
+    navigate("/customer/dashboard");
+  }
+
+  if (user.role === "provider") {
+    navigate("/provider/dashboard");
+  }
+};
+
+const goProfile = () => {
+  setShowMenu(false);
+
+  if (user.role === "customer") {
+    navigate("/customer/profile");
+  }
+
+  if (user.role === "provider") {
+    navigate("/provider/profile");
+  }
+};
+
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-gray-200 bg-white/90 backdrop-blur-lg transition-all duration-300">
+
+    <header className="sticky top-0 z-50 w-full border-b border-gray-200 bg-white/90 backdrop-blur-lg">
 
       <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-8">
 
         {/* Logo */}
 
-        <div className="flex items-center">
-          <h1 className="cursor-pointer text-3xl font-extrabold tracking-tight text-blue-600 transition duration-300 hover:scale-105">
-            FixNear
-          </h1>
-        </div>
+        <Link
+          to="/"
+          className="text-3xl font-extrabold text-blue-600"
+        >
+          FixNear
+        </Link>
 
         {/* Navigation */}
 
         <nav className="hidden items-center gap-12 lg:flex">
 
-          <a
-            href="#"
-            className="relative text-[15px] font-semibold text-blue-600 after:absolute after:-bottom-2 after:left-0 after:h-[2px] after:w-full after:rounded-full after:bg-blue-600"
+          <Link
+            to="/"
+            className="font-semibold text-blue-600"
           >
             Home
-          </a>
+          </Link>
 
           <a
             href="#"
-            className="text-[15px] font-medium text-gray-600 transition-all duration-300 hover:text-blue-600"
+            className="font-medium text-gray-600 hover:text-blue-600"
           >
             Services
           </a>
 
           <a
             href="#"
-            className="text-[15px] font-medium text-gray-600 transition-all duration-300 hover:text-blue-600"
+            className="font-medium text-gray-600 hover:text-blue-600"
           >
             How It Works
           </a>
 
-          <a
-            href="http://localhost:5173/provider/profile"
-            className="text-[15px] font-medium text-gray-600 transition-all duration-300 hover:text-blue-600"
-          >
-            Become a Provider
-          </a>
+          {/* Customer */}
+
+          {(!user || user.role === "customer") && (
+  <Link
+    to="/become-provider"
+    className="font-medium text-gray-600 transition-all duration-300 hover:text-blue-600"
+  >
+    Become Provider
+  </Link>
+)}
+
+        
+
+          {/* Provider */}
+
+          {user?.role === "provider" && (
+
+            <Link
+              to="/provider/dashboard"
+              className="font-medium text-gray-600 hover:text-blue-600"
+            >
+              Dashboard
+            </Link>
+
+          )}
 
         </nav>
 
-        {/* Right Side */}
+        {/* Right */}
 
         <div className="flex items-center gap-5">
 
-          <button className="text-[15px] font-semibold text-gray-700 transition-all duration-300 hover:text-blue-600">
-            <a href="http://localhost:5173/login">Login</a>
-          </button>
+          {!user ? (
 
-          <button className="rounded-xl bg-blue-600 px-6 py-3 text-[15px] font-semibold text-white shadow-md transition-all duration-300 hover:-translate-y-1 hover:bg-blue-700 hover:shadow-xl">
-           <a href="http://localhost:5173/register">Register</a>
-          </button>
+            <>
+
+              <Link
+                to="/login"
+                className="font-semibold text-gray-700 hover:text-blue-600"
+              >
+                Login
+              </Link>
+
+              <Link
+                to="/register"
+                className="rounded-xl bg-blue-600 px-6 py-3 text-white"
+              >
+                Register
+              </Link>
+
+            </>
+
+          ) : (
+
+           <div
+  className="relative"
+  ref={menuRef}
+>
+  <img
+    src={
+      user?.profileImage ||
+      `https://ui-avatars.com/api/?name=${user?.name || "User"}`
+    }
+    alt="profile"
+    onClick={() => setShowMenu(!showMenu)}
+    className="h-11 w-11 cursor-pointer rounded-full border object-cover"
+  />
+
+  {showMenu && (
+    <div className="absolute right-0 mt-3 w-56 overflow-hidden rounded-2xl border bg-white shadow-xl">
+
+      <button
+        onClick={goProfile}
+        className="flex w-full items-center gap-3 px-5 py-4 text-left hover:bg-gray-100"
+      >
+        <FiUser />
+
+        My Profile
+      </button>
+
+      <button
+        onClick={goDashboard}
+        className="flex w-full items-center gap-3 px-5 py-4 text-left hover:bg-gray-100"
+      >
+        <FiGrid />
+
+        Dashboard
+      </button>
+
+      <button
+        onClick={handleLogout}
+        className="flex w-full items-center gap-3 px-5 py-4 text-left text-red-600 hover:bg-red-50"
+      >
+        <FiLogOut />
+
+        Logout
+      </button>
+
+    </div>
+  )}
+</div>
+
+          )}
 
         </div>
 
       </div>
 
     </header>
+
   );
+
 };
 
 export default Navbar;

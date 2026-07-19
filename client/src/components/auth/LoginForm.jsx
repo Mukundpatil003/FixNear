@@ -13,6 +13,7 @@ import toast from "react-hot-toast";
 
 import { loginUser } from "../../api/authApi";
 import useAuth from "../../hooks/useAuth";
+import socket from "../../socket/socket";
 
 const LoginForm = () => {
   const navigate = useNavigate();
@@ -35,51 +36,57 @@ const LoginForm = () => {
     }));
   };
 
-  const handleLogin = async (e) => {
-    e.preventDefault();
+const handleLogin = async (e) => {
+  e.preventDefault();
 
-    if (!formData.email || !formData.password) {
-      return toast.error("Please fill all fields");
+  if (!formData.email || !formData.password) {
+    return toast.error("Please fill all fields");
+  }
+
+  try {
+    setLoading(true);
+
+    const data = await loginUser(formData);
+
+    // Connect Socket
+    socket.connect();
+
+    socket.emit("join", data.user.id);
+
+    toast.success(data.message);
+
+    // Save JWT
+    if (data.token) {
+      localStorage.setItem("token", data.token);
     }
 
-    try {
-      setLoading(true);
-
-      const data = await loginUser(formData);
-
-      toast.success(data.message);
-
-      // Save JWT Token
-      if (data.token) {
-        localStorage.setItem("token", data.token);
-      }
-
-      // Save User in Auth Context
-      if (data.user) {
-        login(data.user);
-      }
-
-      // Redirect based on Role
-      switch (data.user.role) {
-        case "provider":
-          navigate("/provider/dashboard");
-          break;
-
-        case "admin":
-          navigate("/admin/dashboard");
-          break;
-
-        default:
-          navigate("/");
-      }
-    } catch (error) {
-      toast.error(
-        error?.response?.data?.message || "Login Failed"
-      );
-    } finally {
-      setLoading(false);
+    // Save User
+    if (data.user) {
+      login(data.user);
     }
-  };
+
+    // Redirect According To Role
+    if (data.user.role === "customer") {
+      navigate("/customer/dashboard");
+    } 
+    else if (data.user.role === "provider") {
+      navigate("/provider/dashboard");
+    } 
+    else if (data.user.role === "admin") {
+      navigate("/admin/dashboard");
+    } 
+    else {
+      navigate("/");
+    }
+
+  } catch (error) {
+    toast.error(
+      error?.response?.data?.message || "Login Failed"
+    );
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <motion.div

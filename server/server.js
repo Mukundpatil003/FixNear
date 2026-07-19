@@ -8,7 +8,6 @@ const cookieParser = require("cookie-parser");
 const http = require("http");
 const { Server } = require("socket.io");
 const socketHandler= require("./src/socketHandler");
-const reviewRoutes = require("./routes/reviewRoutes");
 
 const dns = require("dns");
 
@@ -26,6 +25,10 @@ const uploadRoutes = require("./routes/uploadRoutes");
 const bookingRoutes = require("./routes/bookingRoutes");
 const notificationRoutes = require("./routes/notificationRoutes");
 const adminRoutes = require("./routes/adminRoutes");
+const locationRoutes = require("./routes/locationRoutes");
+const reviewRoutes = require("./routes/reviewRoutes");
+const customerBookingRoutes = require("./routes/customerBookingRoutes");
+const customerProfileRoutes = require("./routes/customerProfileRoutes");
 dotenv.config();
 
 connectDB();
@@ -76,6 +79,10 @@ app.use("/api/booking", bookingRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/reviews", reviewRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api/location", locationRoutes);
+
+app.use("/api/customer/profile", customerProfileRoutes);
+app.use("/api/customer", customerBookingRoutes);
 
 app.get("/", (req, res) => {
   res.json({
@@ -86,6 +93,16 @@ app.get("/", (req, res) => {
 
 const PORT = process.env.PORT || 5000;
 
+
 server.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
+});
+
+
+app.post("/api/test", (req, res) => {
+  res.json({
+    success: true,
+    message: "POST Working",
+    body: req.body,
+  });
 });

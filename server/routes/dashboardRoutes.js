@@ -2,13 +2,19 @@ const express = require("express");
 
 const router = express.Router();
 
-const { protect, authorize } = require("../middleware/authMiddleware");
+const { protect } = require("../middleware/authMiddleware");
+const authorizeRoles = require("../middleware/roleMiddleware");
 
+const {
+  getCustomerDashboard,
+} = require("../controllers/customerDashboardController");
 // Customer Dashboard
 router.get(
   "/customer",
   protect,
-  authorize("customer"),
+  authorizeRoles("customer"),
+  getCustomerDashboard
+);
   (req, res) => {
 
     res.json({
@@ -18,13 +24,12 @@ router.get(
     });
 
   }
-);
 
 // Provider Dashboard
 router.get(
   "/provider",
   protect,
-  authorize("provider"),
+  authorizeRoles("provider"),
   (req, res) => {
 
     res.json({
@@ -40,7 +45,7 @@ router.get(
 router.get(
   "/admin",
   protect,
-  authorize("admin"),
+  authorizeRoles("admin"),
   (req, res) => {
 
     res.json({

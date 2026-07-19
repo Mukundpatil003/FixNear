@@ -9,6 +9,9 @@ const {
   rejectBooking,
   getMyBookings,
   completeBooking,
+  getCustomerBooking,
+  getCustomerBookings,
+  cancelCustomerBooking,
 } = require("../controllers/bookingController");
 
 // Only provider can accept booking
@@ -40,4 +43,25 @@ router.put(
   completeBooking
 );
 
+
+router.get(
+  "/customer",
+  protect,
+  authorize("customer"),
+  getCustomerBookings
+);
+
+router.get(
+  "/customer/:bookingId",
+  protect,
+  authorize("customer"),
+  getCustomerBooking
+);
+
+router.put(
+  "/customer/cancel/:bookingId",
+  protect,
+  authorize("customer"),
+  cancelCustomerBooking
+);
 module.exports = router;

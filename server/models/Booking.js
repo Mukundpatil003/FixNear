@@ -23,27 +23,30 @@ const bookingSchema = new mongoose.Schema(
     status: {
       type: String,
       enum: [
-        "Pending",
-        "Accepted",
-        "On The Way",
-        "Completed",
-        "Cancelled",
-      ],
+  "Pending",
+  "Accepted",
+  "On The Way",
+  "Working",
+  "Completed",
+  "Cancelled",
+],
       default: "Pending",
     },
 
-    amount: {
-      type: Number,
-      default: 0,
-    },
+  amount: {
+  type: Number,
+  required: true,
+  default: 0,
+},
 
     paymentStatus: {
       type: String,
       enum: [
-        "Pending",
-        "Paid",
-        "Failed",
-      ],
+  "Pending",
+  "Paid",
+  "Refunded",
+  "Failed",
+],
       default: "Pending",
     },
 

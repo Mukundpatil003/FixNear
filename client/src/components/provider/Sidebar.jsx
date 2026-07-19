@@ -8,6 +8,9 @@ import {
   FiLogOut,
 } from "react-icons/fi";
 
+import { useNavigate } from "react-router-dom";
+import useAuth from "../../hooks/useAuth";
+import socket from "../../socket/socket";
 const Sidebar = () => {
   const menuItems = [
     {
@@ -36,7 +39,18 @@ const Sidebar = () => {
       path: "/provider/notifications",
     },
   ];
+const { logout } = useAuth();
 
+const navigate = useNavigate();
+
+const handleLogout = () => {
+
+    logout();
+    socket.disconnect();
+
+    navigate("/login");
+
+};
   return (
     <aside className="flex h-screen w-[270px] flex-col bg-[#0F172A] text-white">
 
@@ -53,6 +67,7 @@ const Sidebar = () => {
         </p>
 
       </div>
+      
 
       {/* Navigation */}
 
@@ -83,7 +98,10 @@ const Sidebar = () => {
 
       <div className="border-t border-slate-700 p-5">
 
-        <button className="flex w-full items-center gap-3 rounded-xl bg-red-600 px-5 py-4 font-semibold text-white transition hover:bg-red-700">
+        <button 
+          className="flex w-full items-center gap-3 rounded-xl bg-red-600 px-5 py-4 font-semibold text-white transition hover:bg-red-700"
+          onClick={handleLogout}
+        >
 
           <FiLogOut size={20} />
 

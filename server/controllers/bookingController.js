@@ -178,9 +178,22 @@ const getMyBookings = async (req, res) => {
 
 const rejectBooking = async (req, res) => {
   try {
+
     const { requestId } = req.params;
 
-    const serviceRequest = await ServiceRequest.findById(requestId);
+    const provider = await Provider.findOne({
+      user: req.user._id,
+    });
+
+    if (!provider) {
+      return res.status(404).json({
+        success: false,
+        message: "Provider not found",
+      });
+    }
+
+    const serviceRequest =
+      await ServiceRequest.findById(requestId);
 
     if (!serviceRequest) {
       return res.status(404).json({
@@ -196,15 +209,39 @@ const rejectBooking = async (req, res) => {
       });
     }
 
+    // Already rejected
+    if (
+      serviceRequest.rejectedProviders.includes(
+        provider._id
+      )
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "You already rejected this request.",
+      });
+    }
+
+    // Add provider into rejected list
+
+    serviceRequest.rejectedProviders.push(
+      provider._id
+    );
+
+    await serviceRequest.save();
+
     res.status(200).json({
       success: true,
-      message: "Booking rejected successfully",
+      message:
+        "Request rejected successfully.",
     });
+
   } catch (error) {
+
     res.status(500).json({
       success: false,
       message: error.message,
     });
+
   }
 };
 const completeBooking = async (req, res) => {
@@ -269,9 +306,128 @@ const completeBooking = async (req, res) => {
 
   }
 };
+
+
+const getCustomerBookings = async (req, res) => {
+  try {
+    const bookings = await Booking.find({
+      customer: req.user._id,
+    })
+      .populate({
+        path: "provider",
+        populate: {
+          path: "user",
+          select: "name profileImage phone",
+        },
+      })
+      .populate("serviceRequest");
+
+    res.status(200).json({
+      success: true,
+      total: bookings.length,
+      bookings,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+const getCustomerBooking = async (req, res) => {
+  try {
+    const booking = await Booking.findById(req.params.bookingId)
+      .populate({
+        path: "provider",
+        populate: {
+          path: "user",
+          select: "name phone profileImage",
+        },
+      })
+      .populate("serviceRequest");
+
+    if (!booking) {
+      return res.status(404).json({
+        success: false,
+        message: "Booking not found",
+      });
+    }
+
+    if (
+      booking.customer.toString() !== req.user._id.toString()
+    ) {
+      return res.status(403).json({
+        success: false,
+        message: "Unauthorized",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      booking,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+const cancelCustomerBooking = async (req, res) => {
+  try {
+    const booking = await Booking.findById(req.params.bookingId);
+
+    if (!booking) {
+      return res.status(404).json({
+        success: false,
+        message: "Booking not found",
+      });
+    }
+
+    if (
+      booking.customer.toString() !== req.user._id.toString()
+    ) {
+      return res.status(403).json({
+        success: false,
+        message: "Unauthorized",
+      });
+    }
+
+    booking.status = "Cancelled";
+
+    await booking.save();
+
+    await ServiceRequest.findByIdAndUpdate(
+      booking.serviceRequest,
+      {
+        status: "Cancelled",
+      }
+    );
+
+    await Provider.findByIdAndUpdate(booking.provider, {
+      isAvailable: true,
+    });
+
+    res.status(200).json({
+      success: true,
+      message: "Booking cancelled successfully",
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
 module.exports = {
   acceptBooking,
   getMyBookings,
   rejectBooking,
   completeBooking,
+  getCustomerBookings,
+  getCustomerBooking,
+  cancelCustomerBooking,
+  
 };

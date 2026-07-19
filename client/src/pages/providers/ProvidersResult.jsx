@@ -1,6 +1,14 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState } from "react"
+import socket from "../../socket/socket";
 import { useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
+import {
+  Search,
+  Users,
+  Star,
+  MapPin,
+  BadgeCheck,
+} from "lucide-react";
 
 import { searchProviders } from "../../api/serviceRequestApi";
 import ProviderCard from "../../components/home/Providers/ProviderCard";
@@ -15,10 +23,43 @@ const ProvidersResult = () => {
   const [providers, setProviders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+const [search, setSearch] = useState("");
 
-  useEffect(() => {
+useEffect(() => {
+
+  socket.connect();
+
+  return () => {
+
+    socket.disconnect();
+
+  };
+
+}, []);
+
+useEffect(() => {
+
+  fetchProviders();
+
+}, [service, latitude, longitude]);
+
+useEffect(() => {
+
+  socket.on("providerAvailabilityChanged", () => {
+
+    console.log("Availability Changed");
+
     fetchProviders();
-  }, []);
+
+  });
+
+  return () => {
+
+    socket.off("providerAvailabilityChanged");
+
+  };
+
+}, []);
 
   const fetchProviders = async () => {
     try {
@@ -41,21 +82,136 @@ const ProvidersResult = () => {
     }
   };
 
+  const filteredProviders = providers.filter((provider) =>
+  provider.user?.name
+    ?.toLowerCase()
+    .includes(search.toLowerCase())
+);
+
   return (
     <section className="min-h-screen bg-slate-50 py-20">
       <div className="mx-auto max-w-7xl px-8">
+<div className="mb-16">
 
-        <div className="mb-12 text-center">
+  <motion.div
 
-          <h1 className="text-5xl font-extrabold text-gray-900">
-            Nearby Providers
-          </h1>
+    initial={{ opacity: 0, y: -40 }}
 
-          <p className="mt-4 text-lg text-gray-500">
-            Service: <span className="font-semibold">{service}</span>
-          </p>
+    animate={{ opacity: 1, y: 0 }}
 
-        </div>
+    className="text-center"
+
+  >
+
+    <h1 className="text-6xl font-black tracking-tight text-slate-900">
+
+      Nearby {service}s
+
+    </h1>
+
+    <p className="mt-4 text-lg text-slate-500">
+
+      Find trusted and verified professionals near you.
+
+    </p>
+
+  </motion.div>
+
+  {/* Stats */}
+
+  <div className="mt-12 grid gap-6 md:grid-cols-4">
+
+    <div className="rounded-3xl bg-white p-6 shadow-md">
+
+      <Users className="mb-3 text-indigo-600" />
+
+      <h2 className="text-3xl font-bold">
+        {providers.length}
+      </h2>
+
+      <p className="text-gray-500">
+        Providers
+      </p>
+
+    </div>
+
+    <div className="rounded-3xl bg-white p-6 shadow-md">
+
+      <Star className="mb-3 text-yellow-500" />
+
+      <h2 className="text-3xl font-bold">
+        {providers.length
+          ? (
+              providers.reduce(
+                (a, b) => a + (b.rating || 0),
+                0
+              ) / providers.length
+            ).toFixed(1)
+          : "0.0"}
+      </h2>
+
+      <p className="text-gray-500">
+        Average Rating
+      </p>
+
+    </div>
+
+    <div className="rounded-3xl bg-white p-6 shadow-md">
+
+      <BadgeCheck className="mb-3 text-green-600" />
+
+      <h2 className="text-3xl font-bold">
+        {
+          providers.filter(
+            (p) => p.isAvailable
+          ).length
+        }
+      </h2>
+
+      <p className="text-gray-500">
+        Available
+      </p>
+
+    </div>
+
+    <div className="rounded-3xl bg-white p-6 shadow-md">
+
+      <MapPin className="mb-3 text-red-500" />
+
+      <h2 className="text-3xl font-bold">
+        10 KM
+      </h2>
+
+      <p className="text-gray-500">
+        Search Radius
+      </p>
+
+    </div>
+
+  </div>
+
+  {/* Search */}
+
+  <div className="relative mt-10">
+
+    <Search
+      className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400"
+      size={22}
+    />
+
+    <input
+      type="text"
+      placeholder="Search Provider..."
+      value={search}
+      onChange={(e) =>
+        setSearch(e.target.value)
+      }
+      className="w-full rounded-2xl border bg-white py-4 pl-14 pr-5 text-lg shadow-sm outline-none focus:border-indigo-500"
+    />
+
+  </div>
+
+</div>
 
         {loading && (
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
@@ -83,7 +239,7 @@ const ProvidersResult = () => {
         {!loading && !error && providers.length > 0 && (
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
 
-            {providers.map((provider, index) => (
+            {filteredProviders.map((provider, index) => (
 
               <motion.div
                 key={provider._id}
@@ -93,7 +249,12 @@ const ProvidersResult = () => {
                   delay: index * 0.1,
                 }}
               >
-                <ProviderCard provider={provider} />
+                <ProviderCard
+    provider={provider}
+    service={service}
+    latitude={latitude}
+    longitude={longitude}
+/>
               </motion.div>
 
             ))}

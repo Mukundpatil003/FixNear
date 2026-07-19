@@ -28,11 +28,12 @@ const protect = async (req, res, next) => {
         message: "No Token Found",
       });
     }
+    console.log("Step 1 - Token Found");
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
+console.log("Step 2 - Decoded:", decoded);
     const user = await User.findById(decoded.id).select("-password");
-
+console.log("Step 3 - User:", user);
     if (!user) {
       return res.status(401).json({
         success: false,
@@ -46,7 +47,7 @@ if (user.isBlocked) {
   });
 }
     req.user = user;
-
+console.log("Step 4 - Next");
     next();
   } catch (error) {
     console.log(error);

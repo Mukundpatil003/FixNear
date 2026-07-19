@@ -38,3 +38,13 @@ export const getPendingRequests = async () => {
 
   return response.data;
 };
+
+
+
+export const getMyRequests = async () => {
+  const response = await api.get(
+    "/service-request/my-requests"
+  );
+
+  return response.data;
+};

@@ -21,6 +21,15 @@ const AuthProvider = ({ children }) => {
     setUser(userData);
   };
 
+  const updateUser = (updatedUser) => {
+    localStorage.setItem(
+      "user",
+      JSON.stringify(updatedUser)
+    );
+
+    setUser(updatedUser);
+  };
+
   const logout = () => {
     localStorage.removeItem("user");
     localStorage.removeItem("token");
@@ -34,6 +43,7 @@ const AuthProvider = ({ children }) => {
         loading,
         login,
         logout,
+        updateUser,
       }}
     >
       {children}

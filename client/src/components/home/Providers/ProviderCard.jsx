@@ -1,180 +1,225 @@
 import {
-  FaStar,
-  FaMapMarkerAlt,
-  FaCheckCircle,
-  FaBriefcase,
-} from "react-icons/fa";
+  Star,
+  MapPin,
+  Briefcase,
+  CalendarPlus,
+} from "lucide-react";
+
 import { motion } from "framer-motion";
+
 import { useNavigate } from "react-router-dom";
 
-const ProviderCard = ({ provider }) => {
+const ProviderCard = ({
+    provider,
+    service,
+    latitude,
+    longitude,
+}) => {
   const navigate = useNavigate();
+  const image =
+  provider.user?.profileImage &&
+  provider.user.profileImage !== ""
+    ? provider.user.profileImage
+    : `https://ui-avatars.com/api/?name=${encodeURIComponent(
+        provider.user?.name || "Provider"
+      )}&background=2563eb&color=fff&size=400`;
+  
 
-  const handleBookNow = () => {
-    navigate("/service-request", {
-      state: {
-        provider,
-      },
-    });
-  };
 
-  return (
-    <motion.div
-      whileHover={{
-        y: -8,
-        scale: 1.02,
-      }}
-      transition={{ duration: 0.35 }}
-      className="group overflow-hidden rounded-3xl border border-gray-100 bg-white shadow-md transition-all duration-500 hover:shadow-2xl"
-    >
-      {/* Image */}
 
-      <div className="relative h-60 overflow-hidden bg-gray-100">
+const handleBookNow = () => {
 
-        <img
-          src={
-            provider.profileImage ||
-            "https://placehold.co/600x400?text=Provider"
-          }
-          alt={provider.user?.name}
-          className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
-        />
+  navigate("/service-request", {
+   state: {
+  provider,
+  service,
+  latitude,
+  longitude,
+},
+  });
 
-        {/* Verified */}
+};
 
-        <div className="absolute left-4 top-4 flex items-center gap-2 rounded-full bg-white/95 px-3 py-2 shadow-lg backdrop-blur">
+ return (
+  <div className="group overflow-hidden rounded-[30px] border border-slate-200 bg-white shadow-lg transition-all duration-500 hover:-translate-y-3 hover:shadow-2xl">
+    {/* Image */}
 
-          <FaCheckCircle className="text-sm text-blue-600" />
+    <div className="relative h-64 overflow-hidden">
 
-          <span className="text-xs font-semibold text-gray-700">
-            Verified
-          </span>
+      <img
+        src={image}
+        alt={provider.user?.name}
+        className="h-full w-full object-cover transition duration-700 group-hover:scale-110"
+      />
 
-        </div>
+      {/* Verified */}
 
-        {/* Online */}
+      <div className="absolute left-5 top-5 rounded-full bg-white/95 px-4 py-2 shadow-lg">
 
-        {provider.isAvailable && (
-          <div className="absolute right-4 top-4 rounded-full bg-green-500 px-3 py-2 text-[11px] font-bold uppercase tracking-wide text-white shadow-lg">
-            ● Online
-          </div>
-        )}
+        <div className="flex items-center gap-2">
+
+  <Star
+    size={16}
+    className="fill-blue-600 text-blue-600"
+  />
+
+  <span className="font-semibold text-slate-800">
+    Verified
+  </span>
+
+</div>
+      </div>
+
+      {/* Online */}
+
+      <div
+        className={`absolute right-5 top-5 rounded-full px-4 py-2 font-semibold text-white shadow-lg animate-pulse ${
+          provider.isAvailable
+            ? "bg-emerald-500"
+            : "bg-gray-500"
+        }`}
+      >
+        ● {provider.isAvailable ? "ONLINE" : "OFFLINE"}
+      </div>
+
+      {/* Rating */}
+
+      <div className="absolute bottom-5 right-5 rounded-full bg-white px-4 py-2 shadow-lg">
+
+       <div className="flex items-center gap-2">
+
+  <Star
+    size={16}
+    className="fill-yellow-400 text-yellow-400"
+  />
+
+  <span className="font-bold">
+    {Number(provider.rating || 0).toFixed(1)}
+  </span>
+
+</div>
 
       </div>
 
-      {/* Content */}
+    </div>
 
-      <div className="space-y-4 p-6">
+    {/* Content */}
 
-        {/* Name */}
+    <div className="p-7">
 
-        <div className="flex items-start justify-between">
+      <h2 className="text-3xl font-bold text-slate-900">
 
-          <div>
+        {provider.user?.name}
 
-            <h3 className="text-xl font-bold text-gray-900">
-              {provider.user?.name}
-            </h3>
+      </h2>
 
-            <p className="mt-1 text-sm font-medium text-blue-600">
-              {provider.service}
-            </p>
+      <p className="mt-2 font-medium text-indigo-600">
 
-          </div>
+        {provider.service}
 
-          <div className="flex items-center gap-1 rounded-full bg-yellow-50 px-3 py-2">
+      </p>
 
-            <FaStar className="text-sm text-yellow-500" />
+      {/* Info */}
 
-            <span className="text-sm font-bold text-gray-800">
-              {Number(provider.rating).toFixed(1)}
-            </span>
+      <div className="mt-6 space-y-4">
 
-          </div>
+        <div className="flex items-center gap-3 text-slate-600">
 
-        </div>
+          <Briefcase
+            className="text-indigo-600"
+            size={20}
+          />
 
-        {/* Experience */}
-
-        <div className="flex items-center gap-2 text-sm text-gray-500">
-
-          <FaBriefcase className="text-blue-600" />
-
-          <span>{provider.experience} Years Experience</span>
+          {provider.experience} Years Experience
 
         </div>
 
-        {/* Address */}
+        <div className="flex items-center gap-3 text-slate-600">
 
-        <div className="flex items-center gap-2 text-sm text-gray-500">
+          <MapPin
+            className="text-red-500"
+            size={20}
+          />
 
-          <FaMapMarkerAlt className="text-red-500" />
-
-          <span>{provider.address}</span>
-
-        </div>
-
-        {/* Stats */}
-
-        <div className="grid grid-cols-2 gap-3 rounded-2xl bg-gray-50 p-4">
-
-          <div className="text-center">
-
-            <p className="text-xs uppercase tracking-wide text-gray-400">
-              Reviews
-            </p>
-
-            <h4 className="mt-1 text-lg font-bold text-gray-900">
-              {provider.totalReviews}
-            </h4>
-
-          </div>
-
-          <div className="border-l border-gray-200 text-center">
-
-            <p className="text-xs uppercase tracking-wide text-gray-400">
-              Jobs
-            </p>
-
-            <h4 className="mt-1 text-lg font-bold text-gray-900">
-              0+
-            </h4>
-
-          </div>
-
-        </div>
-
-        {/* Price */}
-
-        <div className="flex items-center justify-between pt-2">
-
-          <div>
-
-            <p className="text-xs uppercase tracking-widest text-gray-400">
-              Starting From
-            </p>
-
-            <h2 className="mt-1 text-3xl font-extrabold text-blue-600">
-              ₹{provider.pricePerHour}/hr
-            </h2>
-
-          </div>
-
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.96 }}
-            onClick={handleBookNow}
-            className="rounded-xl bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-3 text-sm font-semibold text-white shadow-lg transition-all duration-300 hover:shadow-blue-300"
-          >
-            Book Now
-          </motion.button>
+          {provider.address || "Nearby"}
 
         </div>
 
       </div>
 
-    </motion.div>
-  );
+      {/* Stats */}
+
+      <div className="mt-7 grid grid-cols-2 overflow-hidden rounded-2xl bg-slate-50">
+
+        <div className="border-r p-5 text-center">
+
+          <p className="text-sm text-gray-400">
+
+            REVIEWS
+
+          </p>
+
+          <h3 className="mt-2 text-2xl font-bold">
+
+            {provider.totalReviews || 0}
+
+          </h3>
+
+        </div>
+
+        <div className="p-5 text-center">
+
+          <p className="text-sm text-gray-400">
+
+            JOBS
+
+          </p>
+
+          <h3 className="mt-2 text-2xl font-bold">
+
+            {provider.completedJobs || "0+"}
+
+          </h3>
+
+        </div>
+
+      </div>
+
+      {/* Bottom */}
+
+      <div className="mt-8 flex items-end justify-between">
+
+        <div>
+
+          <p className="text-sm uppercase tracking-wide text-gray-400">
+
+            Starting From
+
+          </p>
+
+          <h2 className="mt-2 text-4xl font-black text-indigo-600">
+
+            ₹{provider.pricePerHour}/hr
+
+          </h2>
+
+        </div>
+
+        <button
+          onClick={handleBookNow}
+         className="flex items-center gap-2 rounded-2xl bg-gradient-to-r from-indigo-600 via-blue-600 to-cyan-500 px-8 py-4 font-semibold text-white shadow-lg transition-all duration-300 hover:scale-105 hover:shadow-indigo-400/40"
+        >
+          <CalendarPlus size={20} />
+
+          Book Now
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+);
 };
 
 export default ProviderCard;

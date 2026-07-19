@@ -32,6 +32,7 @@ const reviewSchema = new mongoose.Schema(
       type: String,
       trim: true,
       maxlength: 500,
+      default: "",   
     },
   },
   {

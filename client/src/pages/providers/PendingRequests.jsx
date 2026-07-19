@@ -16,14 +16,76 @@ import {
   updateProviderProfile,
 } from "../../api/providerApi";
 
+import socket from "../../socket/socket";
+
 const PendingRequests = () => {
   const [requests, setRequests] = useState([]);
   const [provider, setProvider] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  // ===========================
+  // Initial Load + Socket Connect
+  // ===========================
+
   useEffect(() => {
     fetchData();
+
+    socket.connect();
+
+    const user = JSON.parse(localStorage.getItem("user"));
+
+    if (user) {
+      socket.emit("join", user.id);
+    }
+
+    return () => {
+      socket.disconnect();
+    };
   }, []);
+
+  // ===========================
+  // Listen New Requests
+  // ===========================
+
+  useEffect(() => {
+    socket.on("newRequest", (request) => {
+      console.log("New Request :", request);
+
+      setRequests((prev) => {
+        const alreadyExists = prev.find(
+          (item) => item._id === request._id
+        );
+
+        if (alreadyExists) return prev;
+
+        return [request, ...prev];
+      });
+
+      toast.success("New Service Request Received");
+    });
+
+    // Someone accepted request
+    socket.on("requestAccepted", (requestId) => {
+      setRequests((prev) =>
+        prev.filter((item) => item._id !== requestId)
+      );
+    });
+
+    // Someone rejected request
+    socket.on("requestRejected", () => {
+      fetchData();
+    });
+
+    return () => {
+      socket.off("newRequest");
+      socket.off("requestAccepted");
+      socket.off("requestRejected");
+    };
+  }, []);
+
+  // ===========================
+  // Fetch Data
+  // ===========================
 
   const fetchData = async () => {
     try {
@@ -49,21 +111,33 @@ const PendingRequests = () => {
     }
   };
 
+  // ===========================
+  // Accept
+  // ===========================
+
   const handleAccept = async (requestId) => {
     try {
       const res = await acceptRequest(requestId);
 
       if (res.success) {
         toast.success(res.message);
-        fetchData();
+
+        setRequests((prev) =>
+          prev.filter((item) => item._id !== requestId)
+        );
+
+        socket.emit("requestAccepted", requestId);
       }
     } catch (error) {
       toast.error(
-        error.response?.data?.message ||
-          "Failed to accept request"
+        error.response?.data?.message || "Failed"
       );
     }
   };
+
+  // ===========================
+  // Reject
+  // ===========================
 
   const handleReject = async (requestId) => {
     try {
@@ -71,7 +145,12 @@ const PendingRequests = () => {
 
       if (res.success) {
         toast.success(res.message);
-        fetchData();
+
+        setRequests((prev) =>
+          prev.filter((item) => item._id !== requestId)
+        );
+
+        socket.emit("requestRejected", requestId);
       }
     } catch (error) {
       toast.error(
@@ -80,6 +159,10 @@ const PendingRequests = () => {
       );
     }
   };
+
+  // ===========================
+  // Availability
+  // ===========================
 
   const handleAvailability = async () => {
     try {
@@ -106,11 +189,9 @@ const PendingRequests = () => {
 
   return (
     <div className="flex min-h-screen bg-slate-100">
-
       <Sidebar />
 
       <div className="flex-1 p-8">
-
         <Topbar
           provider={provider}
           isAvailable={provider?.isAvailable}
@@ -118,7 +199,6 @@ const PendingRequests = () => {
         />
 
         <div className="mt-8">
-
           <h1 className="mb-6 text-3xl font-bold">
             Pending Requests
           </h1>
@@ -139,11 +219,8 @@ const PendingRequests = () => {
               ))}
             </div>
           )}
-
         </div>
-
       </div>
-
     </div>
   );
 };

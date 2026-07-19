@@ -4,11 +4,12 @@ import toast from "react-hot-toast";
 import Sidebar from "../../components/provider/Sidebar";
 import Topbar from "../../components/provider/Topbar";
 import DashboardCards from "../../components/provider/DashboardCards";
-
+import socket from "../../socket/socket";
 import {
   getProviderDashboard,
   getProviderProfile,
   updateProviderProfile,
+  updateProviderLocation
 } from "../../api/providerApi";
 
 const Dashboard = () => {
@@ -20,28 +21,91 @@ const Dashboard = () => {
     loadDashboard();
   }, []);
 
-  const loadDashboard = async () => {
-    try {
-      setLoading(true);
+  useEffect(() => {
+  if (!provider) return;
 
-      const dashboardRes = await getProviderDashboard();
-      const profileRes = await getProviderProfile();
+  socket.connect();
 
-      if (dashboardRes.success) {
-        setDashboard(dashboardRes.dashboard);
-      }
+  socket.emit("join", provider.user._id);
 
-      if (profileRes.success) {
-        setProvider(profileRes.provider);
-      }
-    } catch (error) {
-      console.log(error);
-
-      toast.error("Failed to load dashboard");
-    } finally {
-      setLoading(false);
-    }
+  return () => {
+    socket.disconnect();
   };
+}, [provider]);
+
+useEffect(() => {
+
+  if (!provider) return;
+
+  if (!provider._id) return;
+
+  if (!socket.connected) {
+    socket.connect();
+  }
+
+  const interval = setInterval(() => {
+
+    navigator.geolocation.getCurrentPosition(async (position) => {
+
+      const latitude = position.coords.latitude;
+      const longitude = position.coords.longitude;
+
+      socket.emit("providerLocation",{
+        providerId: provider._id,
+        latitude,
+        longitude
+      });
+
+      try{
+
+        await updateProviderLocation({
+          latitude,
+          longitude
+        });
+
+      }catch(err){
+
+        console.log(err);
+
+      }
+
+    });
+
+  },5000);
+
+  return ()=>{
+
+    clearInterval(interval);
+
+  };
+
+},[provider]);
+
+const loadDashboard = async () => {
+  try {
+    setLoading(true);
+
+    const dashboardRes = await getProviderDashboard();
+    const profileRes = await getProviderProfile();
+
+    console.log("Dashboard:", dashboardRes);
+    console.log("Profile:", profileRes);
+
+    if (dashboardRes.success) {
+      setDashboard(dashboardRes.dashboard);
+    }
+
+    if (profileRes.success) {
+      setProvider(profileRes.provider);
+    }
+
+  } catch (error) {
+    console.log(error);
+    toast.error("Failed to load dashboard");
+  } finally {
+    setLoading(false);
+  }
+};
 
   const handleAvailability = async () => {
     try {

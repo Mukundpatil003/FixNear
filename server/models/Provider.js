@@ -42,6 +42,20 @@ const providerSchema = new mongoose.Schema(
         required: true,
       },
     },
+    
+    currentLocation: {
+
+type:{
+type:String,
+default:"Point"
+},
+
+coordinates:{
+type:[Number],
+default:[0,0]
+}
+
+},
 
     pricePerHour: {
       type: Number,
@@ -90,5 +104,5 @@ const providerSchema = new mongoose.Schema(
 );
 
 providerSchema.index({ location: "2dsphere" });
-
+providerSchema.index({ currentLocation: "2dsphere" });
 module.exports = mongoose.model("Provider", providerSchema);

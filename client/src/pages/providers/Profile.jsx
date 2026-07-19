@@ -8,10 +8,22 @@ import {
   getProviderProfile,
   updateProviderProfile,
 } from "../../api/providerApi";
+import { uploadImage } from "../../api/uploadApi";
+import {
+  FaCamera,
+  FaUserCircle,
+} from "react-icons/fa";
+
+import useAuth from "../../hooks/useAuth";
 
 const Profile = () => {
   const [provider, setProvider] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [selectedImage, setSelectedImage] =
+  useState(null);
+
+const [preview, setPreview] =
+  useState("");
 
   const [form, setForm] = useState({
     service: "",
@@ -22,7 +34,7 @@ const Profile = () => {
     description: "",
     isAvailable: true,
   });
-
+const { updateUser } = useAuth();
   useEffect(() => {
     fetchProfile();
   }, []);
@@ -66,22 +78,62 @@ const Profile = () => {
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
 
-    try {
-      const res = await updateProviderProfile(form);
+  e.preventDefault();
 
-      if (res.success) {
-        toast.success(res.message);
-        fetchProfile();
-      }
-    } catch (error) {
-      toast.error(
-        error.response?.data?.message ||
-          "Update failed"
-      );
+  try {
+
+    let imageUrl =
+      provider?.user?.profileImage || "";
+
+    if (selectedImage) {
+
+      const upload =
+        await uploadImage(selectedImage);
+
+      imageUrl = upload.image;
+
     }
-  };
+
+    const res =
+      await updateProviderProfile({
+
+        ...form,
+
+        profileImage: imageUrl,
+
+      });
+
+if (res.success) {
+
+   toast.success(res.message);
+
+  updateUser(res.user);
+
+fetchProfile();
+}
+
+  } catch (error) {
+
+    toast.error(
+      error.response?.data?.message ||
+      "Update failed"
+    );
+
+  }
+
+};
+  const handleImageChange = (e) => {
+
+  const file = e.target.files[0];
+
+  if (!file) return;
+
+  setSelectedImage(file);
+
+  setPreview(URL.createObjectURL(file));
+
+};
 
   if (loading)
     return (
@@ -108,6 +160,46 @@ const Profile = () => {
           <h1 className="mb-8 text-3xl font-bold">
             Provider Profile
           </h1>
+          <div className="mb-10 flex flex-col items-center">
+
+  <div className="relative">
+
+    <img
+      src={
+        preview ||
+        provider?.user?.profileImage ||
+        "https://placehold.co/180x180?text=Profile"
+      }
+      alt="profile"
+      className="h-44 w-44 rounded-full border-4 border-blue-500 object-cover shadow-lg"
+    />
+
+    <label
+      htmlFor="image"
+      className="absolute bottom-2 right-2 cursor-pointer rounded-full bg-blue-600 p-3 text-white"
+    >
+      <FaCamera />
+    </label>
+
+    <input
+      id="image"
+      type="file"
+      accept="image/*"
+      className="hidden"
+      onChange={handleImageChange}
+    />
+
+  </div>
+
+  <h2 className="mt-5 text-2xl font-bold">
+    {provider?.user?.name}
+  </h2>
+
+  <p className="text-gray-500">
+    {provider?.user?.email}
+  </p>
+
+</div>
 
           <form
             onSubmit={handleSubmit}

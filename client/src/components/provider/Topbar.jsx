@@ -68,13 +68,13 @@ const Topbar = ({
         <div className="flex items-center gap-4">
 
           <img
-            src={
-              provider?.profileImage ||
-              "https://placehold.co/80x80?text=User"
-            }
-            alt="Provider"
-            className="h-12 w-12 rounded-full object-cover"
-          />
+  src={
+    provider?.user?.profileImage ||
+    `https://ui-avatars.com/api/?name=${provider?.user?.name || "User"}`
+  }
+  alt="Provider"
+  className="h-12 w-12 rounded-full object-cover"
+/>
 
           <div>
 

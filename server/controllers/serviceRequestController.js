@@ -1,37 +1,126 @@
 const ServiceRequest = require("../models/ServiceRequest");
 const Provider = require("../models/Provider");
+const Booking = require("../models/Booking");
+
 
 const createServiceRequest = async (req, res) => {
+
   try {
-    const {
-      service,
-      problem,
-      latitude,
-      longitude,
-      address,
-    } = req.body;
 
-    const request = await ServiceRequest.create({
-      customer: req.user._id,
+    if (req.user.role !== "customer") {
+      return res.status(403).json({
+        success: false,
+        message: "Only customers can create service requests",
+      });
+    }
+   const {
+  provider,
+  service,
+  problem,
+  latitude,
+  longitude,
+  address,
+  image,
+} = req.body;
 
-      service,
+    // Create Request
+ const request = await ServiceRequest.create({
+  customer: req.user._id,
 
-      problem,
+  service,
 
-      address,
+  problem,
 
-      location: {
-        type: "Point",
-        coordinates: [
-          Number(longitude),
-          Number(latitude),
-        ],
+  image,
+
+  address,
+
+  assignedProvider: provider,
+
+  location: {
+    type: "Point",
+    coordinates: [
+      Number(longitude),
+      Number(latitude),
+    ],
+  },
+});
+
+    // ===============================
+    // SOCKET.IO
+    // ===============================
+
+    const io = req.app.get("io");
+
+    // Find Nearby Providers
+   let providers = [];
+
+if (provider) {
+
+  const selectedProvider = await Provider.findById(provider);
+
+  if (selectedProvider) {
+
+    providers.push(selectedProvider);
+
+  }
+
+} else {
+
+  providers = await Provider.find({
+
+    service: {
+      $regex: `^${service}$`,
+      $options: "i",
+    },
+
+    isAvailable: true,
+
+    isBlocked: false,
+
+    isVerified: true,
+
+    location: {
+      $near: {
+        $geometry: {
+          type: "Point",
+          coordinates: [
+            Number(longitude),
+            Number(latitude),
+          ],
+        },
+        $maxDistance: 10000,
       },
+    },
+
+  });
+
+}
+
+    console.log(
+      "Nearby Providers:",
+      providers.length
+    );
+
+    // Send Event
+    providers.forEach((provider) => {
+      io.to(provider.user.toString()).emit(
+        "newRequest",
+        request
+      );
+
+      console.log(
+        "Sent to:",
+        provider.user.toString()
+      );
     });
+
+    // ===============================
 
     res.status(201).json({
       success: true,
-      message: "Service request created successfully.",
+      message:
+        "Service request created successfully.",
       request,
     });
 
@@ -48,29 +137,42 @@ const createServiceRequest = async (req, res) => {
 
 const findNearbyProviders = async (req, res) => {
   try {
-    const { latitude, longitude, service } = req.query;
-    console.log("Query:", req.query);
 
-     const allProviders = await Provider.find();
 
-     console.log("All Providers:", allProviders);
+    console.log("========== QUERY ==========");
+    console.log(req.query);
+const { latitude, longitude, service } = req.query;
 
-    const providers = await Provider.find({
-      service: { $regex: `^${service}$`, $options: "i" },
-      isAvailable: true,
-      location: {
-        $near: {
-          $geometry: {
-            type: "Point",
-            coordinates: [
-              Number(longitude),
-              Number(latitude),
-            ],
-          },
-          $maxDistance: 10000,
-        },
+let query = {
+  service: {
+    $regex: `^${service}$`,
+    $options: "i",
+  },
+  isAvailable: true,
+};
+
+if (
+  latitude &&
+  longitude &&
+  !isNaN(Number(latitude)) &&
+  !isNaN(Number(longitude))
+) {
+  query.location = {
+    $near: {
+      $geometry: {
+        type: "Point",
+        coordinates: [
+          Number(longitude),
+          Number(latitude),
+        ],
       },
-    }).populate("user", "name phone");
+      $maxDistance: 10000,
+    },
+  };
+}
+
+const providers = await Provider.find(query)
+  .populate("user", "name phone profileImage");
 
     res.status(200).json({
       success: true,
@@ -79,6 +181,8 @@ const findNearbyProviders = async (req, res) => {
     });
 
   } catch (error) {
+     console.error("========== FIND PROVIDERS ERROR ==========");
+  console.error(error);
     res.status(500).json({
       success: false,
       message: error.message,
@@ -100,18 +204,25 @@ const getPendingRequests = async (req, res) => {
       });
     }
 
-    const requests = await ServiceRequest.find({
-      status: "Pending",
-      service: provider.service,
-    })
-      .populate("customer", "name phone")
-      .sort({ createdAt: -1 });
+const requests = await ServiceRequest.find({
+  status: "Pending",
+  service: provider.service,
+  rejectedProviders: {
+    $ne: provider._id,
+  },
+})
+.populate("customer", "name phone role")
+.sort({ createdAt: -1 });
 
-    res.status(200).json({
-      success: true,
-      total: requests.length,
-      requests,
-    });
+const customerRequests = requests.filter(
+  (request) => request.customer?.role === "customer"
+);
+
+  res.status(200).json({
+  success: true,
+  total: customerRequests.length,
+  requests: customerRequests,
+});
 
   } catch (error) {
 
@@ -123,8 +234,63 @@ const getPendingRequests = async (req, res) => {
   }
 };
 
+
+const getMyRequests = async (req, res) => {
+  try {
+
+    // Get all service requests
+    const requests = await ServiceRequest.find({
+      customer: req.user._id,
+    })
+      .populate({
+        path: "assignedProvider",
+        populate: {
+          path: "user",
+          select: "name phone profileImage",
+        },
+      })
+      .sort({ createdAt: -1 });
+
+    // Attach booking with every request
+    const requestsWithBooking = await Promise.all(
+
+  requests.map(async (request) => {
+
+    const booking = await Booking.findOne({
+      serviceRequest: request._id,
+    });
+
+    return {
+      ...request.toObject(),
+      booking,
+    };
+
+  })
+
+);
+  console.log(
+  JSON.stringify(requestsWithBooking, null, 2)
+);
+
+    res.status(200).json({
+      success: true,
+      total: requestsWithBooking.length,
+      requests: requestsWithBooking,
+    });
+
+  } catch (error) {
+
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+
+  }
+
+};
 module.exports = {
   createServiceRequest,
   findNearbyProviders,
   getPendingRequests,
+  getMyRequests,
 };

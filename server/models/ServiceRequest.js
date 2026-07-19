@@ -43,22 +43,31 @@ const serviceRequestSchema = new mongoose.Schema(
     },
 
     status: {
-      type: String,
-      enum: [
-        "Pending",
-        "Accepted",
-        "On The Way",
-        "Completed",
-        "Cancelled",
-      ],
-      default: "Pending",
-    },
+  type: String,
+  enum: [
+    "Pending",
+    "Accepted",
+    "On The Way",
+    "Completed",
+    "Cancelled",
+  ],
+  default: "Pending",
+},
 
-    assignedProvider: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Provider",
-      default: null,
-    },
+rejectedProviders: [
+  {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Provider",
+    default: [],
+  },
+],
+
+assignedProvider: {
+  type: mongoose.Schema.Types.ObjectId,
+  ref: "Provider",
+  default: null,
+},
+  
 
     estimatedPrice: {
       type: Number,
