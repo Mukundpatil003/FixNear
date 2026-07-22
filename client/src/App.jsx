@@ -13,89 +13,78 @@ import ResetPassword from "./auth/ResetPassword";
 // Provider Pages
 import ProvidersResult from "./pages/providers/ProvidersResult";
 import ProviderDashboard from "./pages/providers/Dashboard";
-import CustomerDashboard from "./pages/customer/Dashboard";
 import PendingRequests from "./pages/providers/PendingRequests";
 import MyBookings from "./pages/providers/MyBookings";
 import Profile from "./pages/providers/Profile";
 import Notifications from "./pages/providers/Notifications";
-
-// Service Request
-import ServiceRequest from "./pages/service-request/ServiceRequest";
-
-// Protected Route
-import ProtectedRoute from "./routes/ProtectedRoute";
 import BecomeProvider from "./pages/providers/BecomeProvider";
-import CreateRequest from "./pages/service-request/CreateRequest";
-import MyRequests from "./pages/customer/MyRequests";
-import TrackProvider from "./pages/customer/TrackProvider";
+
+// Customer Pages
+import CustomerDashboard from "./pages/customer/Dashboard";
 import CustomerProfile from "./pages/customer/Profile";
-import CustomerLayout from "./layouts/CustomerLayout";
+import MyRequests from "./pages/customer/MyRequests";
 import CustomerBookings from "./pages/customer/MyBookings";
 import BookingDetails from "./pages/customer/BookingDetails";
 import NearbyProviders from "./pages/customer/NearbyProviders";
+import NotificationPage from "./pages/customer/NotificationPage";
+import Reviews from "./pages/customer/Reviews";
+import TrackProvider from "./pages/customer/TrackProvider";
+
+// Service Request
+import CreateRequest from "./pages/service-request/CreateRequest";
+
+// Layout
+import CustomerLayout from "./layouts/CustomerLayout";
+
+// Protected Route
+import ProtectedRoute from "./routes/ProtectedRoute";
+
 function App() {
   return (
     <BrowserRouter>
       <Routes>
+        {/* ================= PUBLIC ROUTES ================= */}
 
-        {/* Public Routes */}
+        <Route path="/" element={<Home />} />
+
+        <Route path="/login" element={<Login />} />
+
+        <Route path="/register" element={<Register />} />
+
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+
+        <Route path="/verify-otp" element={<VerifyOTP />} />
+
+        <Route path="/reset-password" element={<ResetPassword />} />
+
+        <Route path="/providers" element={<ProvidersResult />} />
+
+        {/* ================= CUSTOMER ================= */}
 
         <Route
-          path="/"
-          element={<Home />}
+          path="/service-request"
+          element={
+            <ProtectedRoute roles={["customer"]}>
+              <CreateRequest />
+            </ProtectedRoute>
+          }
         />
 
         <Route
-          path="/login"
-          element={<Login />}
+          path="/become-provider"
+          element={
+            <ProtectedRoute roles={["customer"]}>
+              <BecomeProvider />
+            </ProtectedRoute>
+          }
         />
 
-        <Route
-          path="/register"
-          element={<Register />}
-        />
-
-        <Route
-          path="/forgot-password"
-          element={<ForgotPassword />}
-        />
-
-        <Route
-          path="/verify-otp"
-          element={<VerifyOTP />}
-        />
-
-        <Route
-          path="/reset-password"
-          element={<ResetPassword />}
-        />
-
-        <Route
-          path="/providers"
-          element={<ProvidersResult />}
-        />
-
-        {/* Customer */}
-
-        <Route
-  path="/service-request"
-  element={
-    <ProtectedRoute
-      roles={["customer"]}
-    >
-      <CreateRequest />
-    </ProtectedRoute>
-  }
-/>
-
-        {/* Provider */}
+        {/* ================= PROVIDER ================= */}
 
         <Route
           path="/provider/dashboard"
           element={
-            <ProtectedRoute
-              roles={["provider"]}
-            >
+            <ProtectedRoute roles={["provider"]}>
               <ProviderDashboard />
             </ProtectedRoute>
           }
@@ -104,9 +93,7 @@ function App() {
         <Route
           path="/provider/pending"
           element={
-            <ProtectedRoute
-              roles={["provider"]}
-            >
+            <ProtectedRoute roles={["provider"]}>
               <PendingRequests />
             </ProtectedRoute>
           }
@@ -115,9 +102,7 @@ function App() {
         <Route
           path="/provider/bookings"
           element={
-            <ProtectedRoute
-              roles={["provider"]}
-            >
+            <ProtectedRoute roles={["provider"]}>
               <MyBookings />
             </ProtectedRoute>
           }
@@ -126,9 +111,7 @@ function App() {
         <Route
           path="/provider/profile"
           element={
-            <ProtectedRoute
-              roles={["provider"]}
-            >
+            <ProtectedRoute roles={["provider"]}>
               <Profile />
             </ProtectedRoute>
           }
@@ -137,92 +120,66 @@ function App() {
         <Route
           path="/provider/notifications"
           element={
-            <ProtectedRoute
-              roles={["provider"]}
-            >
+            <ProtectedRoute roles={["provider"]}>
               <Notifications />
             </ProtectedRoute>
           }
         />
-        
+
+        {/* ================= CUSTOMER DASHBOARD ================= */}
+
         <Route
-  path="/become-provider"
-  element={
-    <ProtectedRoute roles={["customer"]}>
-      <BecomeProvider />
-    </ProtectedRoute>
-  }
-/>
+          element={
+            <ProtectedRoute roles={["customer"]}>
+              <CustomerLayout />
+            </ProtectedRoute>
+          }
+        >
+          <Route
+            path="/customer/dashboard"
+            element={<CustomerDashboard />}
+          />
 
-{/* <Route
-  path="/my-requests"
-  element={
-    <ProtectedRoute roles={["customer"]}>
-      <MyRequests />
-    </ProtectedRoute>
-  }
-/> */}
+          <Route
+            path="/customer/profile"
+            element={<CustomerProfile />}
+          />
 
-{/* 
-<Route
-  path="/track/:bookingId"
-  element={
-    <ProtectedRoute roles={["customer"]}>
-      <TrackProvider />
-    </ProtectedRoute>
-  }
-/> */}
+          <Route
+            path="/customer/my-requests"
+            element={<MyRequests />}
+          />
 
+          <Route
+            path="/customer/bookings"
+            element={<CustomerBookings />}
+          />
 
-<Route
-  element={
-    <ProtectedRoute roles={["customer"]}>
-      <CustomerLayout />
-    </ProtectedRoute>
-  }
->
+          <Route
+            path="/customer/bookings/:bookingId"
+            element={<BookingDetails />}
+          />
 
-  <Route
-    path="/customer/dashboard"
-    element={<CustomerDashboard />}
-  />
+          <Route
+            path="/customer/providers"
+            element={<NearbyProviders />}
+          />
 
-  <Route
-    path="/customer/profile"
-    element={<CustomerProfile />}
-  />
+          <Route
+            path="/customer/notifications"
+            element={<NotificationPage />}
+          />
 
-  <Route
-    path="/customer/my-requests"
-    element={<MyRequests />}
-  />
+          <Route
+            path="/customer/reviews"
+            element={<Reviews />}
+          />
 
-<Route
-  path="/customer/bookings"
-  element={<CustomerBookings />}
-/>
-{/* 
-  <Route
-    path="/customer/notifications"
-    element={<CustomerNotifications />}
-  /> */}
-
-  <Route
-    path="/track/:bookingId"
-    element={<TrackProvider />}
-  />
-
-  <Route
-  path="/customer/bookings/:bookingId"
-  element={<BookingDetails />}
-/>
-  <Route
-    path="/customer/providers"
-    element={<NearbyProviders />}
-  />
-
-</Route>
-
+          <Route
+            path="/track/:bookingId"
+            element={<TrackProvider />}
+          />
+        </Route>
       </Routes>
     </BrowserRouter>
   );

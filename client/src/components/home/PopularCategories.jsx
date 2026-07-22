@@ -5,9 +5,7 @@ import CategoryCard from "./CategoryCard";
 
 const PopularCategories = () => {
   const [categories, setCategories] = useState([]);
-
   const [loading, setLoading] = useState(true);
-
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -25,7 +23,6 @@ const PopularCategories = () => {
       }
     } catch (err) {
       console.error(err);
-
       setError("Failed to load categories");
     } finally {
       setLoading(false);
@@ -33,8 +30,10 @@ const PopularCategories = () => {
   };
 
   return (
-    <section className="bg-white py-24">
-
+    <section
+      id="services"
+      className="bg-white py-24 scroll-mt-24"
+    >
       <div className="mx-auto max-w-7xl px-8">
 
         {/* Heading */}
@@ -46,7 +45,6 @@ const PopularCategories = () => {
           transition={{ duration: 0.6 }}
           className="mx-auto mb-16 max-w-2xl text-center"
         >
-
           <span className="inline-flex rounded-full bg-blue-100 px-4 py-2 text-sm font-semibold uppercase tracking-wider text-blue-600">
             Popular Services
           </span>
@@ -58,21 +56,18 @@ const PopularCategories = () => {
           <p className="mt-4 text-[17px] leading-8 text-gray-500">
             Book trusted professionals for your everyday home service needs.
           </p>
-
         </motion.div>
 
         {/* Loading */}
 
         {loading && (
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-
             {Array.from({ length: 8 }).map((_, index) => (
               <div
                 key={index}
                 className="h-[185px] animate-pulse rounded-3xl bg-gray-100"
               />
             ))}
-
           </div>
         )}
 
@@ -95,11 +90,8 @@ const PopularCategories = () => {
         {/* Categories */}
 
         {!loading && !error && categories.length > 0 && (
-
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-
             {categories.map((item, index) => (
-
               <motion.div
                 key={item._id}
                 initial={{
@@ -118,19 +110,14 @@ const PopularCategories = () => {
                   delay: index * 0.08,
                 }}
               >
-
-                <CategoryCard item={item} />
-
+                <CategoryCard
+                  item={item}
+                />
               </motion.div>
-
             ))}
-
           </div>
-
         )}
-
       </div>
-
     </section>
   );
 };

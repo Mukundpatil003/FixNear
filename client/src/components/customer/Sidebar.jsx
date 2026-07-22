@@ -1,13 +1,12 @@
 import { NavLink, useNavigate } from "react-router-dom";
 import {
+  FiHome,
   FiGrid,
   FiClipboard,
   FiCalendar,
   FiUser,
   FiBell,
   FiStar,
-  FiCreditCard,
-  FiSettings,
   FiLogOut,
 } from "react-icons/fi";
 
@@ -15,7 +14,15 @@ import useAuth from "../../hooks/useAuth";
 import socket from "../../socket/socket";
 
 const Sidebar = () => {
+  const { logout } = useAuth();
+  const navigate = useNavigate();
+
   const menuItems = [
+    {
+      name: "Home",
+      icon: <FiHome size={20} />,
+      path: "/",
+    },
     {
       name: "Dashboard",
       icon: <FiGrid size={20} />,
@@ -29,7 +36,7 @@ const Sidebar = () => {
     {
       name: "My Requests",
       icon: <FiClipboard size={20} />,
-      path: "/customer/my-requests"
+      path: "/customer/my-requests",
     },
     {
       name: "My Bookings",
@@ -46,11 +53,7 @@ const Sidebar = () => {
       icon: <FiStar size={20} />,
       path: "/customer/reviews",
     },
-
   ];
-
-  const { logout } = useAuth();
-  const navigate = useNavigate();
 
   const handleLogout = () => {
     logout();
@@ -59,20 +62,18 @@ const Sidebar = () => {
   };
 
   return (
-    <aside className="flex h-screen w-[270px] flex-col bg-[#0F172A] text-white">
+    <aside className="flex h-screen w-[270px] flex-col bg-slate-900 text-white shadow-2xl">
 
       {/* Logo */}
 
       <div className="border-b border-slate-700 p-8">
-
-        <h1 className="text-3xl font-extrabold text-blue-500">
+        <h1 className="text-3xl font-extrabold tracking-wide text-blue-500">
           FixNear
         </h1>
 
         <p className="mt-2 text-sm text-slate-400">
           Customer Dashboard
         </p>
-
       </div>
 
       {/* Navigation */}
@@ -83,8 +84,9 @@ const Sidebar = () => {
           <NavLink
             key={item.path}
             to={item.path}
+            end={item.path === "/"}
             className={({ isActive }) =>
-              `mb-3 flex items-center gap-4 rounded-2xl px-5 py-4 font-medium transition-all ${
+              `mb-3 flex items-center gap-4 rounded-2xl px-5 py-4 transition-all duration-300 ${
                 isActive
                   ? "bg-blue-600 text-white shadow-lg"
                   : "text-slate-300 hover:bg-slate-800 hover:text-white"
@@ -93,8 +95,9 @@ const Sidebar = () => {
           >
             {item.icon}
 
-            <span>{item.name}</span>
-
+            <span className="font-medium">
+              {item.name}
+            </span>
           </NavLink>
         ))}
 
@@ -106,7 +109,7 @@ const Sidebar = () => {
 
         <button
           onClick={handleLogout}
-          className="flex w-full items-center gap-3 rounded-xl bg-red-600 px-5 py-4 font-semibold text-white transition hover:bg-red-700"
+          className="flex w-full items-center justify-center gap-3 rounded-xl bg-red-600 py-4 font-semibold transition hover:bg-red-700"
         >
           <FiLogOut size={20} />
 
@@ -114,7 +117,6 @@ const Sidebar = () => {
         </button>
 
       </div>
-
     </aside>
   );
 };

@@ -1,104 +1,145 @@
-import { useState } from "react";
-import { submitReview } from "../../api/reviewApi";
-import toast from "react-hot-toast";
+import { useEffect, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { FiX, FiSave } from "react-icons/fi";
+import StarRating from "./StarRating";
 
-const ReviewModal = ({ bookingId, onClose }) => {
-
+const ReviewModal = ({
+  open,
+  onClose,
+  onSubmit,
+  review = null,
+}) => {
   const [rating, setRating] = useState(5);
   const [comment, setComment] = useState("");
 
-  const handleSubmit = async () => {
-      console.log("Booking ID:", bookingId);
+  useEffect(() => {
+    if (review) {
+      setRating(review.rating);
+      setComment(review.comment || "");
+    } else {
+      setRating(5);
+      setComment("");
+    }
+  }, [review]);
 
-    try {
-
-      const data = await submitReview({
-        bookingId,
-        rating,
-        comment,
-      });
-
-      if (data.success) {
-
-        toast.success("Review Submitted");
-
-        onClose();
-
-      }
-
-    } catch (err) {
-
-      toast.error(
-        err.response?.data?.message ||
-        "Failed to submit review"
-      );
-
+  const handleSubmit = () => {
+    if (rating < 1) {
+      alert("Please select a rating.");
+      return;
     }
 
+    onSubmit({
+      rating,
+      comment,
+    });
   };
 
   return (
-
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-
-      <div className="w-[420px] rounded-3xl bg-white p-8">
-
-        <h2 className="text-3xl font-bold">
-          Rate Provider
-        </h2>
-
-        <div className="mt-8 flex justify-center gap-3">
-
-          {[1,2,3,4,5].map((star)=>(
-
-            <button
-              key={star}
-              onClick={() => setRating(star)}
-              className={`text-5xl ${
-                star <= rating
-                  ? "text-yellow-400"
-                  : "text-gray-300"
-              }`}
-            >
-              ★
-            </button>
-
-          ))}
-
-        </div>
-
-        <textarea
-          rows={5}
-          placeholder="Write your experience..."
-          value={comment}
-          onChange={(e)=>setComment(e.target.value)}
-          className="mt-8 w-full rounded-xl border p-4"
-        />
-
-        <div className="mt-8 flex gap-4">
-
-          <button
-            onClick={onClose}
-            className="flex-1 rounded-xl border py-3"
+    <AnimatePresence>
+      {open && (
+        <motion.div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+        >
+          <motion.div
+            initial={{
+              scale: 0.8,
+              opacity: 0,
+              y: 30,
+            }}
+            animate={{
+              scale: 1,
+              opacity: 1,
+              y: 0,
+            }}
+            exit={{
+              scale: 0.8,
+              opacity: 0,
+              y: 30,
+            }}
+            transition={{
+              duration: 0.25,
+            }}
+            className="w-full max-w-lg rounded-3xl bg-white shadow-2xl"
           >
-            Cancel
-          </button>
+            {/* Header */}
 
-          <button
-            onClick={handleSubmit}
-            className="flex-1 rounded-xl bg-blue-600 py-3 text-white"
-          >
-            Submit
-          </button>
+            <div className="flex items-center justify-between border-b p-6">
+              <div>
+                <h2 className="text-2xl font-bold text-slate-800">
+                  {review ? "Edit Review" : "Write Review"}
+                </h2>
 
-        </div>
+                <p className="mt-1 text-sm text-slate-500">
+                  Share your experience with the provider.
+                </p>
+              </div>
 
-      </div>
+              <button
+                onClick={onClose}
+                className="rounded-full p-2 hover:bg-gray-100"
+              >
+                <FiX size={22} />
+              </button>
+            </div>
 
-    </div>
+            {/* Body */}
 
+            <div className="space-y-6 p-6">
+              <div>
+                <label className="mb-3 block text-sm font-semibold text-slate-700">
+                  Rating
+                </label>
+
+                <StarRating
+                  rating={rating}
+                  editable
+                  onChange={setRating}
+                  size={34}
+                />
+              </div>
+
+              <div>
+                <label className="mb-3 block text-sm font-semibold text-slate-700">
+                  Review
+                </label>
+
+                <textarea
+                  rows={5}
+                  value={comment}
+                  onChange={(e) => setComment(e.target.value)}
+                  placeholder="Tell others about your experience..."
+                  className="w-full rounded-2xl border border-slate-300 p-4 outline-none transition focus:border-blue-500"
+                />
+              </div>
+            </div>
+
+            {/* Footer */}
+
+            <div className="flex justify-end gap-3 border-t p-6">
+              <button
+                onClick={onClose}
+                className="rounded-xl border px-5 py-3 font-medium hover:bg-gray-100"
+              >
+                Cancel
+              </button>
+
+              <button
+                onClick={handleSubmit}
+                className="flex items-center gap-2 rounded-xl bg-blue-600 px-6 py-3 font-semibold text-white hover:bg-blue-700"
+              >
+                <FiSave />
+
+                {review ? "Update Review" : "Submit Review"}
+              </button>
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
-
 };
 
 export default ReviewModal;

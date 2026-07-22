@@ -1,3 +1,6 @@
+import { useEffect } from "react";
+import { useLocation } from "react-router-dom";
+
 import Navbar from "../../components/layout/Navbar";
 import Footer from "../../components/layout/Footer";
 
@@ -9,6 +12,27 @@ import Testimonials from "../../components/home/Testimonials/Testimonials";
 import FAQ from "../../components/home/FAQ/FAQ";
 
 const Home = () => {
+  const location = useLocation();
+
+  useEffect(() => {
+    if (!location.hash) return;
+
+    const id = location.hash.replace("#", "");
+
+    const timer = setTimeout(() => {
+      const element = document.getElementById(id);
+
+      if (element) {
+        element.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
+      }
+    }, 150);
+
+    return () => clearTimeout(timer);
+  }, [location]);
+
   return (
     <>
       <Navbar />
