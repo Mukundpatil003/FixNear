@@ -3,9 +3,10 @@ import {
   MapPinned,
   Star,
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const ActiveBookingCard = ({ booking }) => {
-
+const navigate = useNavigate();
   if (!booking) {
 
     return (
@@ -133,11 +134,12 @@ const ActiveBookingCard = ({ booking }) => {
 
       </div>
 
-      <button className="mt-8 w-full rounded-full bg-white py-4 text-xl font-semibold text-[#3654E8]">
-
-        Track Live
-
-      </button>
+     <button
+  onClick={() => navigate(`/track/${booking._id}`)}
+  className="mt-8 w-full rounded-full bg-white py-4 text-xl font-semibold text-[#3654E8] hover:bg-gray-100 transition"
+>
+  Track Live
+</button>
 
     </div>
 

@@ -27,7 +27,7 @@ import CustomerBookings from "./pages/customer/MyBookings";
 import BookingDetails from "./pages/customer/BookingDetails";
 import NearbyProviders from "./pages/customer/NearbyProviders";
 import NotificationPage from "./pages/customer/NotificationPage";
-import Reviews from "./pages/customer/Reviews";
+
 import TrackProvider from "./pages/customer/TrackProvider";
 
 // Service Request
@@ -38,6 +38,7 @@ import CustomerLayout from "./layouts/CustomerLayout";
 
 // Protected Route
 import ProtectedRoute from "./routes/ProtectedRoute";
+import ProviderLayout from "./layouts/ProviderLayout";
 
 function App() {
   return (
@@ -81,50 +82,38 @@ function App() {
 
         {/* ================= PROVIDER ================= */}
 
-        <Route
-          path="/provider/dashboard"
-          element={
-            <ProtectedRoute roles={["provider"]}>
-              <ProviderDashboard />
-            </ProtectedRoute>
-          }
-        />
+ <Route
+  element={
+    <ProtectedRoute roles={["provider"]}>
+      <ProviderLayout />
+    </ProtectedRoute>
+  }
+>
+  <Route
+    path="/provider/dashboard"
+    element={<ProviderDashboard />}
+  />
 
-        <Route
-          path="/provider/pending"
-          element={
-            <ProtectedRoute roles={["provider"]}>
-              <PendingRequests />
-            </ProtectedRoute>
-          }
-        />
+  <Route
+    path="/provider/pending"
+    element={<PendingRequests />}
+  />
 
-        <Route
-          path="/provider/bookings"
-          element={
-            <ProtectedRoute roles={["provider"]}>
-              <MyBookings />
-            </ProtectedRoute>
-          }
-        />
+  <Route
+    path="/provider/bookings"
+    element={<MyBookings />}
+  />
 
-        <Route
-          path="/provider/profile"
-          element={
-            <ProtectedRoute roles={["provider"]}>
-              <Profile />
-            </ProtectedRoute>
-          }
-        />
+  <Route
+    path="/provider/profile"
+    element={<Profile />}
+  />
 
-        <Route
-          path="/provider/notifications"
-          element={
-            <ProtectedRoute roles={["provider"]}>
-              <Notifications />
-            </ProtectedRoute>
-          }
-        />
+  <Route
+    path="/provider/notifications"
+    element={<Notifications />}
+  />
+</Route>
 
         {/* ================= CUSTOMER DASHBOARD ================= */}
 
@@ -170,10 +159,7 @@ function App() {
             element={<NotificationPage />}
           />
 
-          <Route
-            path="/customer/reviews"
-            element={<Reviews />}
-          />
+        
 
           <Route
             path="/track/:bookingId"

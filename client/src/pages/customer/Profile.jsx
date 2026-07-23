@@ -7,11 +7,13 @@ import {
 import ProfileCard from "../../components/customer/profile/ProfileCard";
 import ProfileImageUpload from "../../components/customer/profile/ProfileImageUpload";
 import ProfileForm from "../../components/customer/profile/ProfileForm";
-
+import useAuth from "../../hooks/useAuth";
 const Profile = () => {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const { user, updateUser } = useAuth();
+  
 
   useEffect(() => {
     fetchProfile();
@@ -36,22 +38,33 @@ const Profile = () => {
     });
   };
 
-  const handleSave = async () => {
-    try {
-      setSaving(true);
+ const handleSave = async () => {
+  try {
+    setSaving(true);
 
-      const data = await updateProfile(profile);
+    const data = await updateProfile(profile);
 
-      setProfile(data.profile);
+    setProfile(data.profile);
 
-      alert("Profile Updated Successfully");
-    } catch (err) {
-      console.error(err);
-      alert("Failed to update profile");
-    } finally {
-      setSaving(false);
-    }
-  };
+    // ⭐ Update Auth Context (Navbar updates instantly)
+    updateUser({
+      ...user,
+      name: data.profile.name,
+      email: data.profile.email,
+      phone: data.profile.phone,
+      location: data.profile.location,
+      profileImage: data.profile.profileImage,
+    });
+
+    alert("Profile Updated Successfully");
+
+  } catch (err) {
+    console.error(err);
+    alert("Failed to update profile");
+  } finally {
+    setSaving(false);
+  }
+};
 
   if (loading) {
     return (

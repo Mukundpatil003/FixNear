@@ -1,9 +1,12 @@
 import { useState } from "react";
 import { Camera } from "lucide-react";
 import { uploadProfileImage } from "../../../services/customerProfileService";
+import useAuth from "../../../hooks/useAuth";
 
 const ProfileImageUpload = ({ profile, setProfile }) => {
   const [uploading, setUploading] = useState(false);
+
+  const { user, updateUser } = useAuth();
 
   const handleImage = async (e) => {
     const file = e.target.files[0];
@@ -15,10 +18,20 @@ const ProfileImageUpload = ({ profile, setProfile }) => {
 
       const data = await uploadProfileImage(file);
 
-      setProfile({
+      // Update profile page
+      const updatedProfile = {
         ...profile,
         profileImage: data.image,
+      };
+
+      setProfile(updatedProfile);
+
+      // ⭐ Update Navbar & Auth Context
+      updateUser({
+        ...user,
+        profileImage: data.image,
       });
+
     } catch (error) {
       console.error(error);
       alert("Image upload failed");
@@ -51,23 +64,23 @@ const ProfileImageUpload = ({ profile, setProfile }) => {
 
           <label
             htmlFor="profileImage"
-            className="absolute bottom-2 right-2 bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-full cursor-pointer transition"
+            className="absolute bottom-2 right-2 bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-full cursor-pointer"
           >
             <Camera size={18} />
           </label>
 
           <input
-            type="file"
             id="profileImage"
-            className="hidden"
+            type="file"
             accept="image/*"
+            className="hidden"
             onChange={handleImage}
           />
 
         </div>
 
         {uploading && (
-          <p className="mt-4 text-blue-600 font-medium">
+          <p className="mt-4 text-blue-600">
             Uploading...
           </p>
         )}

@@ -4,7 +4,7 @@ import toast from "react-hot-toast";
 import Sidebar from "../../components/provider/Sidebar";
 import Topbar from "../../components/provider/Topbar";
 import BookingCard from "../../components/provider/BookingCard";
-
+import ProviderLocationTracker from "../../components/provider/ProviderLocationTracker";
 import {
   getMyBookings,
   completeBooking,
@@ -93,7 +93,7 @@ const MyBookings = () => {
 
   return (
     <div className="flex min-h-screen bg-slate-100">
-
+<ProviderLocationTracker />
       <Sidebar />
 
       <div className="flex-1 p-8">

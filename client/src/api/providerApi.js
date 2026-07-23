@@ -2,13 +2,7 @@ import api from "./axios";
 
 // Home Page
 export const getTopProviders = async () => {
-  const response = await api.get("/provider/nearby", {
-    params: {
-      latitude: 18.5204,
-      longitude: 73.8567,
-    },
-  });
-
+  const response = await api.get("/provider/top");
   return response.data;
 };
 

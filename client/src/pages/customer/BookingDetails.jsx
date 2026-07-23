@@ -160,25 +160,25 @@ const BookingDetails = () => {
 
         </div>
 
-        <div className="mt-10 flex gap-4">
+<div className="mt-10 flex gap-4">
 
-          {/* <button
-            onClick={() =>
-              navigate(`/track/${booking._id}`)
-            }
-            className="bg-blue-600 text-white px-6 py-3 rounded-xl"
-          >
-            Track Provider
-          </button> */}
+  {booking.status === "Accepted" && (
+    <button
+      onClick={() => navigate(`/track/${booking._id}`)}
+      className="bg-blue-600 text-white px-6 py-3 rounded-xl hover:bg-blue-700"
+    >
+      📍 Track Provider
+    </button>
+  )}
 
-          <a
-            href={`tel:${booking.provider?.user?.phone}`}
-            className="bg-green-600 text-white px-6 py-3 rounded-xl"
-          >
-            Call Provider
-          </a>
+  <a
+    href={`tel:${booking.provider?.user?.phone}`}
+    className="bg-green-600 text-white px-6 py-3 rounded-xl hover:bg-green-700"
+  >
+    📞 Call Provider
+  </a>
 
-        </div>
+</div>
 
       </div>
 

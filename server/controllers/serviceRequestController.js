@@ -142,14 +142,18 @@ const findNearbyProviders = async (req, res) => {
     console.log("========== QUERY ==========");
     console.log(req.query);
 const { latitude, longitude, service } = req.query;
-
 let query = {
-  service: {
-    $regex: `^${service}$`,
-    $options: "i",
-  },
   isAvailable: true,
+  isVerified: true,
+  isBlocked: false,
 };
+
+if (service) {
+  query.service = {
+    $regex: service,
+    $options: "i",
+  };
+}
 
 if (
   latitude &&
@@ -166,7 +170,7 @@ if (
           Number(latitude),
         ],
       },
-      $maxDistance: 10000,
+      $maxDistance: 100000,
     },
   };
 }
@@ -239,18 +243,19 @@ const getMyRequests = async (req, res) => {
   try {
 
     // Get all service requests
-    const requests = await ServiceRequest.find({
-      customer: req.user._id,
-    })
-      .populate({
-        path: "assignedProvider",
-        populate: {
-          path: "user",
-          select: "name phone profileImage",
-        },
-      })
-      .sort({ createdAt: -1 });
-
+   const requests = await ServiceRequest.find({
+    customer: req.user._id
+})
+.populate({
+    path: "assignedProvider",
+    populate: {
+        path: "user",
+        select: "name phone profileImage"
+    }
+})
+.populate({
+    path: "booking"
+});
     // Attach booking with every request
     const requestsWithBooking = await Promise.all(
 

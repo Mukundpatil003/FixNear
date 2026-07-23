@@ -78,6 +78,10 @@ assignedProvider: {
       type: String,
       default: "",
     },
+    booking: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Booking"
+},
   },
   {
     timestamps: true,

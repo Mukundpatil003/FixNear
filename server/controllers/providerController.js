@@ -309,24 +309,40 @@ const getProviderDashboard = async (req, res) => {
   }
 };
 const getTopProviders = async (req, res) => {
+  console.log("🔥 getTopProviders API HIT");
   try {
     const providers = await Provider.find({
-      isAvailable: true,
       isVerified: true,
+      isAvailable: true,
       isBlocked: false,
     })
-      .populate("user", "name")
-      .sort({ rating: -1 })
-      .limit(6);
+      .populate({
+        path: "user",
+        match: {
+          role: "provider",
+        },
+        select: "name profileImage role",
+      });
 
-    res.status(200).json({
+    const filteredProviders = providers
+      .filter((p) => p.user)
+      .sort((a, b) => {
+        if (b.rating !== a.rating) {
+          return b.rating - a.rating;
+        }
+
+        return b.totalReviews - a.totalReviews;
+      })
+      .slice(0, 3);
+
+    res.json({
       success: true,
-      providers,
+      providers: filteredProviders,
     });
-  } catch (error) {
+  } catch (err) {
     res.status(500).json({
       success: false,
-      message: error.message,
+      message: err.message,
     });
   }
 };

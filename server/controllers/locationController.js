@@ -1,5 +1,5 @@
 const Provider = require("../models/Provider");
-
+const Booking = require("../models/Booking");
 // Update Provider Location
 const updateLocation = async (req, res) => {
   try {
@@ -23,17 +23,48 @@ const updateLocation = async (req, res) => {
 
     await provider.save();
 
+    // Get Socket.io instance
+    const io = req.app.get("io");
+
+    // Find active booking
+    const booking = await Booking.findOne({
+      provider: provider._id,
+      status: "Accepted",
+    });
+
+    if (booking) {
+      io.to(booking.customer.toString()).emit(
+        "providerLocation",
+        {
+          bookingId: booking._id,
+          latitude,
+          longitude,
+        }
+      );
+
+      console.log(
+        "📍 Live location sent to customer:",
+        booking.customer.toString()
+      );
+    }
+
     res.json({
       success: true,
       message: "Location Updated",
     });
+
   } catch (error) {
+
+    console.log(error);
+
     res.status(500).json({
       success: false,
       message: error.message,
     });
+
   }
 };
+
 
 // Get Provider Location
 const getProviderLocation = async (req, res) => {

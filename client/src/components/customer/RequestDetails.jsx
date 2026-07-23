@@ -3,12 +3,35 @@ import Timeline from "./Timeline";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import ReviewModal from "./ReviewModal";
+import { giveReview } from "../../api/reviewApi";
 
 
 const RequestDetails = ({ request }) => {
   const [showReview, setShowReview] = useState(false);
 
 const navigate = useNavigate();
+
+const handleReviewSubmit = async ({ rating, comment }) => {
+  try {
+    await giveReview({
+      bookingId: request.booking._id,
+      rating,
+      comment,
+    });
+
+    alert("Review submitted successfully.");
+
+    setShowReview(false);
+
+  } catch (err) {
+    console.error(err);
+
+    alert(
+      err.response?.data?.message ||
+      "Failed to submit review."
+    );
+  }
+};
 
 
   if (!request) {
@@ -173,12 +196,17 @@ status={request.status}
 
 
 <button
-  onClick={() =>
-    navigate(`/track/${request._id}`)
-  }
+  onClick={() => {
+    if (!request.booking?._id) {
+      alert("Booking not created yet");
+      return;
+    }
+
+    navigate(`/track/${request.booking._id}`);
+  }}
   className="rounded-xl bg-blue-600 py-3 font-semibold text-white"
 >
-📍 Track
+  📍 Track
 </button>
 
 </div>
@@ -224,11 +252,12 @@ status={request.status}
 </button>
 
 )}
-{showReview && (
- <ReviewModal
-  bookingId={request.booking?._id}
-  onClose={() => setShowReview(false)}
-/>
+{request.booking && (
+  <ReviewModal
+    open={showReview}
+    onClose={() => setShowReview(false)}
+    onSubmit={handleReviewSubmit}
+  />
 )}
 
 </div>

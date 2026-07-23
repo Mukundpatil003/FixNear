@@ -1,4 +1,4 @@
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import {
   FiGrid,
   FiClock,
@@ -8,57 +8,55 @@ import {
   FiLogOut,
 } from "react-icons/fi";
 
-import { useNavigate } from "react-router-dom";
 import useAuth from "../../hooks/useAuth";
 import socket from "../../socket/socket";
+
 const Sidebar = () => {
+  const { logout } = useAuth();
+  const navigate = useNavigate();
+
   const menuItems = [
     {
       name: "Dashboard",
-      icon: <FiGrid size={20} />,
+      icon: <FiGrid size={22} />,
       path: "/provider/dashboard",
     },
     {
       name: "Pending Requests",
-      icon: <FiClock size={20} />,
+      icon: <FiClock size={22} />,
       path: "/provider/pending",
     },
     {
       name: "My Bookings",
-      icon: <FiCalendar size={20} />,
+      icon: <FiCalendar size={22} />,
       path: "/provider/bookings",
     },
     {
       name: "Profile",
-      icon: <FiUser size={20} />,
+      icon: <FiUser size={22} />,
       path: "/provider/profile",
     },
     {
       name: "Notifications",
-      icon: <FiBell size={20} />,
+      icon: <FiBell size={22} />,
       path: "/provider/notifications",
     },
   ];
-const { logout } = useAuth();
 
-const navigate = useNavigate();
-
-const handleLogout = () => {
-
+  const handleLogout = () => {
     logout();
     socket.disconnect();
-
     navigate("/login");
+  };
 
-};
   return (
-    <aside className="flex h-screen w-[270px] flex-col bg-[#0F172A] text-white">
+    <aside className="fixed left-0 top-0 flex h-screen w-72 flex-col bg-slate-900 text-white shadow-2xl">
 
       {/* Logo */}
 
-      <div className="border-b border-slate-700 p-8">
+      <div className="border-b border-slate-700 px-8 py-8">
 
-        <h1 className="text-3xl font-extrabold text-blue-500">
+        <h1 className="text-4xl font-extrabold text-blue-500">
           FixNear
         </h1>
 
@@ -67,30 +65,31 @@ const handleLogout = () => {
         </p>
 
       </div>
-      
 
-      {/* Navigation */}
+      {/* Menu */}
 
-      <nav className="mt-8 flex-1 px-4">
+      <nav className="flex-1 overflow-y-auto px-5 py-8">
 
-        {menuItems.map((item) => (
-          <NavLink
-            key={item.path}
-            to={item.path}
-            className={({ isActive }) =>
-              `mb-3 flex items-center gap-4 rounded-2xl px-5 py-4 font-medium transition-all ${
-                isActive
-                  ? "bg-blue-600 text-white shadow-lg"
-                  : "text-slate-300 hover:bg-slate-800 hover:text-white"
-              }`
-            }
-          >
-            {item.icon}
+        <div className="space-y-3">
 
-            <span>{item.name}</span>
+          {menuItems.map((item) => (
+            <NavLink
+              key={item.path}
+              to={item.path}
+              className={({ isActive }) =>
+                `group flex items-center gap-4 rounded-2xl px-5 py-4 text-lg font-medium transition-all duration-300 ${
+                  isActive
+                    ? "bg-blue-600 text-white shadow-lg"
+                    : "text-slate-300 hover:bg-slate-800 hover:text-white"
+                }`
+              }
+            >
+              <span>{item.icon}</span>
+              <span>{item.name}</span>
+            </NavLink>
+          ))}
 
-          </NavLink>
-        ))}
+        </div>
 
       </nav>
 
@@ -98,15 +97,12 @@ const handleLogout = () => {
 
       <div className="border-t border-slate-700 p-5">
 
-        <button 
-          className="flex w-full items-center gap-3 rounded-xl bg-red-600 px-5 py-4 font-semibold text-white transition hover:bg-red-700"
+        <button
           onClick={handleLogout}
+          className="flex w-full items-center justify-center gap-3 rounded-2xl bg-red-600 py-4 text-lg font-semibold text-white transition-all duration-300 hover:bg-red-700 hover:shadow-lg"
         >
-
-          <FiLogOut size={20} />
-
+          <FiLogOut size={22} />
           Logout
-
         </button>
 
       </div>

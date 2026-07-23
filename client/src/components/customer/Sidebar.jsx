@@ -48,11 +48,7 @@ const Sidebar = () => {
       icon: <FiBell size={20} />,
       path: "/customer/notifications",
     },
-    {
-      name: "Reviews",
-      icon: <FiStar size={20} />,
-      path: "/customer/reviews",
-    },
+
   ];
 
   const handleLogout = () => {
