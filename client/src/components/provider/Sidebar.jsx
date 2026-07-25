@@ -6,6 +6,7 @@ import {
   FiUser,
   FiBell,
   FiLogOut,
+  FiHome,
 } from "react-icons/fi";
 
 import useAuth from "../../hooks/useAuth";
@@ -16,6 +17,11 @@ const Sidebar = () => {
   const navigate = useNavigate();
 
   const menuItems = [
+    {
+      name: "Home",
+      icon: <FiHome size={22} />,
+      path: "/",
+    },
     {
       name: "Dashboard",
       icon: <FiGrid size={22} />,
@@ -51,11 +57,8 @@ const Sidebar = () => {
 
   return (
     <aside className="fixed left-0 top-0 flex h-screen w-72 flex-col bg-slate-900 text-white shadow-2xl">
-
       {/* Logo */}
-
       <div className="border-b border-slate-700 px-8 py-8">
-
         <h1 className="text-4xl font-extrabold text-blue-500">
           FixNear
         </h1>
@@ -63,19 +66,16 @@ const Sidebar = () => {
         <p className="mt-2 text-sm text-slate-400">
           Provider Dashboard
         </p>
-
       </div>
 
       {/* Menu */}
-
       <nav className="flex-1 overflow-y-auto px-5 py-8">
-
         <div className="space-y-3">
-
           {menuItems.map((item) => (
             <NavLink
               key={item.path}
               to={item.path}
+              end={item.path === "/"}
               className={({ isActive }) =>
                 `group flex items-center gap-4 rounded-2xl px-5 py-4 text-lg font-medium transition-all duration-300 ${
                   isActive
@@ -84,19 +84,15 @@ const Sidebar = () => {
                 }`
               }
             >
-              <span>{item.icon}</span>
+              {item.icon}
               <span>{item.name}</span>
             </NavLink>
           ))}
-
         </div>
-
       </nav>
 
       {/* Logout */}
-
       <div className="border-t border-slate-700 p-5">
-
         <button
           onClick={handleLogout}
           className="flex w-full items-center justify-center gap-3 rounded-2xl bg-red-600 py-4 text-lg font-semibold text-white transition-all duration-300 hover:bg-red-700 hover:shadow-lg"
@@ -104,9 +100,7 @@ const Sidebar = () => {
           <FiLogOut size={22} />
           Logout
         </button>
-
       </div>
-
     </aside>
   );
 };

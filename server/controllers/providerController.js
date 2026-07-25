@@ -54,7 +54,7 @@ const becomeProvider = async (req, res) => {
           rating: 0,
           totalReviews: 0,
           isAvailable: true,
-          isVerified: false,
+          isVerified: true,
           isBlocked: false,
         },
       ],
