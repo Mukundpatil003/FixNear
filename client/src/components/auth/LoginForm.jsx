@@ -8,7 +8,7 @@ import {
   FiArrowRight,
 } from "react-icons/fi";
 import { FcGoogle } from "react-icons/fc";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
 
 import { loginUser } from "../../api/authApi";
@@ -16,12 +16,9 @@ import useAuth from "../../hooks/useAuth";
 import socket from "../../socket/socket";
 
 const LoginForm = () => {
-  const navigate = useNavigate();
-
   const { login } = useAuth();
 
   const [showPassword, setShowPassword] = useState(false);
-
   const [loading, setLoading] = useState(false);
 
   const [formData, setFormData] = useState({
@@ -36,57 +33,62 @@ const LoginForm = () => {
     }));
   };
 
-const handleLogin = async (e) => {
-  e.preventDefault();
+  const handleLogin = async (e) => {
+    e.preventDefault();
 
-  if (!formData.email || !formData.password) {
-    return toast.error("Please fill all fields");
-  }
-
-  try {
-    setLoading(true);
-
-    const data = await loginUser(formData);
-
-    // Connect Socket
-    socket.connect();
-
-    socket.emit("join", data.user.id);
-
-    toast.success(data.message);
-
-    // Save JWT
-    if (data.token) {
-      localStorage.setItem("token", data.token);
+    if (!formData.email || !formData.password) {
+      return toast.error("Please fill all fields");
     }
 
-    // Save User
-    if (data.user) {
-      login(data.user);
-    }
+    try {
+      setLoading(true);
 
-    // Redirect According To Role
-    if (data.user.role === "customer") {
-      navigate("/customer/dashboard");
-    } 
-    else if (data.user.role === "provider") {
-      navigate("/provider/dashboard");
-    } 
-    else if (data.user.role === "admin") {
-      navigate("/admin/dashboard");
-    } 
-    else {
-      navigate("/");
-    }
+      const data = await loginUser(formData);
 
-  } catch (error) {
-    toast.error(
-      error?.response?.data?.message || "Login Failed"
-    );
-  } finally {
-    setLoading(false);
-  }
-};
+      // 1. Connect Socket
+      if (socket && data.user) {
+        socket.connect();
+        socket.emit("join", data.user.id || data.user._id);
+      }
+
+      toast.success(data.message || "Login successful!");
+
+      // 2. Save JWT Token & User JSON to localStorage
+      if (data.token) {
+        localStorage.setItem("token", data.token);
+      }
+      if (data.user) {
+        localStorage.setItem("user", JSON.stringify(data.user));
+      }
+
+      // 3. Update Auth Context
+      if (data.user && typeof login === "function") {
+        login(data.user);
+      }
+
+      // 4. Clean Redirect to prevent React state race condition / blank screen
+      const role = data.user?.role;
+      let targetPath = "/";
+
+      if (role === "customer") {
+        targetPath = "/customer/dashboard";
+      } else if (role === "provider") {
+        targetPath = "/provider/dashboard";
+      } else if (role === "admin") {
+        targetPath = "/admin/dashboard";
+      }
+
+      // Using window.location.href ensures the page loads with fresh localStorage and no blank screen
+      window.location.href = targetPath;
+
+    } catch (error) {
+      toast.error(
+        error?.response?.data?.message || "Login Failed"
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <motion.div
@@ -96,7 +98,6 @@ const handleLogin = async (e) => {
       className="flex w-full items-center justify-start px-8 py-12 lg:px-14 xl:px-20"
     >
       <div className="w-full max-w-[560px]">
-
         <h1 className="text-4xl font-extrabold text-gray-900 xl:text-5xl">
           Welcome Back
         </h1>
@@ -106,19 +107,14 @@ const handleLogin = async (e) => {
         </p>
 
         <form onSubmit={handleLogin}>
-
           {/* Email */}
-
           <div className="mt-10">
-
             <label className="mb-3 block text-sm font-bold uppercase tracking-wider text-gray-700">
               Email Address
             </label>
 
             <div className="flex h-16 items-center rounded-2xl border border-gray-300 px-5 transition-all duration-300 focus-within:border-blue-600 focus-within:shadow-lg">
-
               <FiMail className="text-2xl text-gray-400" />
-
               <input
                 type="email"
                 name="email"
@@ -127,17 +123,12 @@ const handleLogin = async (e) => {
                 onChange={handleChange}
                 className="ml-4 w-full bg-transparent text-lg outline-none"
               />
-
             </div>
-
           </div>
 
           {/* Password */}
-
           <div className="mt-7">
-
             <div className="mb-3 flex items-center justify-between">
-
               <label className="text-sm font-bold uppercase tracking-wider text-gray-700">
                 Password
               </label>
@@ -148,11 +139,9 @@ const handleLogin = async (e) => {
               >
                 Forgot Password?
               </Link>
-
             </div>
 
             <div className="flex h-16 items-center rounded-2xl border border-gray-300 px-5 transition-all duration-300 focus-within:border-blue-600 focus-within:shadow-lg">
-
               <FiLock className="text-2xl text-gray-400" />
 
               <input
@@ -174,28 +163,19 @@ const handleLogin = async (e) => {
                   <FiEye className="text-2xl text-gray-400" />
                 )}
               </button>
-
             </div>
-
           </div>
 
           {/* Remember */}
-
           <div className="mt-6 flex items-center">
-
             <input
               type="checkbox"
               className="h-5 w-5 rounded border-gray-300 accent-blue-600"
             />
-
-            <span className="ml-3 text-gray-600">
-              Remember Me
-            </span>
-
+            <span className="ml-3 text-gray-600">Remember Me</span>
           </div>
 
           {/* Login */}
-
           <motion.button
             type="submit"
             whileHover={{ scale: 1.02 }}
@@ -203,54 +183,36 @@ const handleLogin = async (e) => {
             disabled={loading}
             className="mt-8 flex h-16 w-full items-center justify-center gap-3 rounded-2xl bg-gradient-to-r from-blue-600 to-blue-700 text-xl font-bold text-white shadow-lg transition hover:shadow-blue-500/40 disabled:cursor-not-allowed disabled:opacity-70"
           >
-
             {loading ? "Signing In..." : "Login"}
-
             {!loading && <FiArrowRight size={22} />}
-
           </motion.button>
-
         </form>
 
         {/* Divider */}
-
         <div className="my-10 flex items-center">
-
           <div className="h-px flex-1 bg-gray-300"></div>
-
           <span className="mx-5 whitespace-nowrap text-sm font-semibold uppercase text-gray-400">
             OR CONTINUE WITH
           </span>
-
           <div className="h-px flex-1 bg-gray-300"></div>
-
         </div>
 
         {/* Google */}
-
         <button className="flex h-16 w-full items-center justify-center gap-4 rounded-2xl border border-gray-300 bg-white text-lg font-semibold transition-all duration-300 hover:border-blue-500 hover:shadow-md">
-
           <FcGoogle size={28} />
-
           Continue with Google
-
         </button>
 
         {/* Register */}
-
         <p className="mt-10 text-center text-gray-600">
-
           New to FixNear?
-
           <Link
             to="/register"
             className="ml-2 font-bold text-blue-600 hover:underline"
           >
             Register Now
           </Link>
-
         </p>
-
       </div>
     </motion.div>
   );
