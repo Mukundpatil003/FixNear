@@ -62,17 +62,24 @@ const allowedOrigins = [
   "https://fix-near-theta.vercel.app",
 ];
 
+
+
+// Allow localhost, exact Vercel URL, and any Vercel preview branch
 app.use(
   cors({
     origin: function (origin, callback) {
-      // allow requests with no origin (like mobile apps, curl, or Postman)
+      // Allow requests with no origin (like mobile apps, curl, or Render health checks)
       if (!origin) return callback(null, true);
-      
-      // Allow exact match OR any Vercel preview deployment
-      if (allowedOrigins.includes(origin) || origin.endsWith(".vercel.app")) {
+
+      const isAllowed =
+        origin.includes("localhost") ||
+        origin.includes("vercel.app");
+
+      if (isAllowed) {
         return callback(null, true);
+      } else {
+        return callback(new Error("Not allowed by CORS"));
       }
-      return callback(new Error("Not allowed by CORS"));
     },
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
@@ -80,6 +87,7 @@ app.use(
   })
 );
 
+// Preflight response
 app.options("*", cors());
 
 // Routes
