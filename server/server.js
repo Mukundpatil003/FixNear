@@ -87,8 +87,7 @@ app.use(
   })
 );
 
-// Preflight response
-app.options("*", cors());
+
 
 // Routes
 app.use("/api/auth", authRoutes);
