@@ -41,7 +41,7 @@ const server = http.createServer(app);
 // Socket.io
 const io = new Server(server, {
   cors: {
-    origin: "http://localhost:5173",
+    origin: true,
     credentials: true,
   },
 });
@@ -59,6 +59,7 @@ app.use(cookieParser());
 const allowedOrigins = [
   "http://localhost:5173",
   "http://localhost:5174",
+  "https://fixnear-rho.vercel.app",
 ];
 
 app.use(
