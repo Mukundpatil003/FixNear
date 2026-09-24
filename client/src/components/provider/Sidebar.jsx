@@ -7,80 +7,110 @@ import {
   FiBell,
   FiLogOut,
   FiHome,
+  FiX,
+  FiCheckCircle
 } from "react-icons/fi";
+import { FaWrench } from "react-icons/fa";
 
 import useAuth from "../../hooks/useAuth";
 import socket from "../../socket/socket";
 
-const Sidebar = () => {
-  const { logout } = useAuth();
+const Sidebar = ({ mobileOpen, setMobileOpen }) => {
+  const { user, logout } = useAuth();
   const navigate = useNavigate();
 
   const menuItems = [
     {
-      name: "Home",
-      icon: <FiHome size={22} />,
-      path: "/",
-    },
-    {
       name: "Dashboard",
-      icon: <FiGrid size={22} />,
+      icon: <FiGrid size={18} />,
       path: "/provider/dashboard",
     },
     {
       name: "Pending Requests",
-      icon: <FiClock size={22} />,
+      icon: <FiClock size={18} />,
       path: "/provider/pending",
     },
     {
       name: "My Bookings",
-      icon: <FiCalendar size={22} />,
+      icon: <FiCalendar size={18} />,
       path: "/provider/bookings",
     },
     {
-      name: "Profile",
-      icon: <FiUser size={22} />,
+      name: "Notifications",
+      icon: <FiBell size={18} />,
+      path: "/provider/notifications",
+    },
+    {
+      name: "My Profile",
+      icon: <FiUser size={18} />,
       path: "/provider/profile",
     },
     {
-      name: "Notifications",
-      icon: <FiBell size={22} />,
-      path: "/provider/notifications",
+      name: "Home Page",
+      icon: <FiHome size={18} />,
+      path: "/",
     },
   ];
 
   const handleLogout = () => {
     logout();
     socket.disconnect();
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
     navigate("/login");
   };
 
-  return (
-    <aside className="fixed left-0 top-0 flex h-screen w-72 flex-col bg-slate-900 text-white shadow-2xl">
-      {/* Logo */}
-      <div className="border-b border-slate-700 px-8 py-8">
-        <h1 className="text-4xl font-extrabold text-blue-500">
-          FixNear
-        </h1>
+  const navContent = (
+    <div className="flex h-full flex-col justify-between bg-slate-950 text-slate-300 p-5">
+      <div>
+        {/* Header Branding */}
+        <div className="flex items-center justify-between pb-6 border-b border-slate-800/80 pt-2">
+          <NavLink to="/" className="flex items-center gap-2.5">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white shadow-md shadow-blue-500/20">
+              <FaWrench className="text-lg" />
+            </div>
+            <div>
+              <h1 className="text-xl font-black tracking-tight text-white">
+                Fix<span className="text-blue-500">Near</span>
+              </h1>
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                Provider Hub
+              </p>
+            </div>
+          </NavLink>
 
-        <p className="mt-2 text-sm text-slate-400">
-          Provider Dashboard
-        </p>
-      </div>
+          {setMobileOpen && (
+            <button
+              onClick={() => setMobileOpen(false)}
+              className="lg:hidden text-slate-400 hover:text-white p-1"
+            >
+              <FiX className="text-xl" />
+            </button>
+          )}
+        </div>
 
-      {/* Menu */}
-      <nav className="flex-1 overflow-y-auto px-5 py-8">
-        <div className="space-y-3">
+        {/* Status pill */}
+        <div className="mt-5 rounded-2xl bg-slate-900 border border-slate-800 p-3 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span className="text-xs font-bold text-white">Verified Partner</span>
+          </div>
+          <FiCheckCircle className="text-xs text-blue-500" />
+        </div>
+
+        {/* Navigation */}
+        <nav className="mt-6 space-y-1.5">
           {menuItems.map((item) => (
             <NavLink
               key={item.path}
               to={item.path}
               end={item.path === "/"}
+              onClick={() => setMobileOpen && setMobileOpen(false)}
               className={({ isActive }) =>
-                `group flex items-center gap-4 rounded-2xl px-5 py-4 text-lg font-medium transition-all duration-300 ${
+                `flex items-center gap-3.5 rounded-2xl px-4 py-3 text-xs font-bold transition-all duration-200 ${
                   isActive
-                    ? "bg-blue-600 text-white shadow-lg"
-                    : "text-slate-300 hover:bg-slate-800 hover:text-white"
+                    ? "bg-blue-600 text-white shadow-md shadow-blue-600/30"
+                    : "text-slate-400 hover:bg-slate-900 hover:text-white"
                 }`
               }
             >
@@ -88,20 +118,57 @@ const Sidebar = () => {
               <span>{item.name}</span>
             </NavLink>
           ))}
-        </div>
-      </nav>
+        </nav>
+      </div>
 
-      {/* Logout */}
-      <div className="border-t border-slate-700 p-5">
+      {/* Footer Profile & Logout */}
+      <div className="border-t border-slate-800/80 pt-4 space-y-3">
+        <div className="flex items-center gap-3 px-2">
+          <img
+            src={
+              user?.profileImage ||
+              `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.name || "Provider")}&background=2563eb&color=fff`
+            }
+            alt="Avatar"
+            className="h-9 w-9 rounded-full object-cover border border-slate-700"
+          />
+          <div className="truncate">
+            <p className="truncate text-xs font-bold text-white">{user?.name || "Provider"}</p>
+            <p className="truncate text-[10px] text-slate-400">{user?.email || "Pro Account"}</p>
+          </div>
+        </div>
+
         <button
           onClick={handleLogout}
-          className="flex w-full items-center justify-center gap-3 rounded-2xl bg-red-600 py-4 text-lg font-semibold text-white transition-all duration-300 hover:bg-red-700 hover:shadow-lg"
+          className="flex w-full items-center justify-center gap-2 rounded-xl bg-slate-900 border border-slate-800 py-2.5 text-xs font-bold text-rose-400 hover:bg-rose-500/10 hover:text-rose-400 transition-colors cursor-pointer"
         >
-          <FiLogOut size={22} />
-          Logout
+          <FiLogOut className="text-sm" />
+          Sign Out
         </button>
       </div>
-    </aside>
+    </div>
+  );
+
+  return (
+    <>
+      {/* Desktop Fixed Sidebar */}
+      <aside className="hidden lg:block w-64 flex-shrink-0 h-screen sticky top-0 shadow-xl z-20">
+        {navContent}
+      </aside>
+
+      {/* Mobile Drawer Overlay */}
+      {mobileOpen && (
+        <div className="fixed inset-0 z-50 lg:hidden flex">
+          <div
+            className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm"
+            onClick={() => setMobileOpen(false)}
+          ></div>
+          <div className="relative w-72 h-full z-10 animate-in slide-in-from-left duration-200">
+            {navContent}
+          </div>
+        </div>
+      )}
+    </>
   );
 };
 

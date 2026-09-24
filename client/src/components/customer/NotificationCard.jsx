@@ -1,124 +1,83 @@
-import {
-  FiBell,
-  FiCheck,
-  FiTrash2,
-} from "react-icons/fi";
+import { FiBell, FiCheck, FiTrash2 } from "react-icons/fi";
 import { motion } from "framer-motion";
 
-const NotificationCard = ({
-  notification,
-  onRead,
-  onDelete,
-}) => {
+const NotificationCard = ({ notification, onRead, onDelete }) => {
   const formatTime = (date) => {
     const now = new Date();
     const created = new Date(date);
+    const diff = Math.floor((now - created) / 1000);
 
-    const diff = Math.floor(
-      (now - created) / 1000
-    );
-
-    if (diff < 60) return `${diff} sec ago`;
-
-    if (diff < 3600)
-      return `${Math.floor(diff / 60)} min ago`;
-
-    if (diff < 86400)
-      return `${Math.floor(diff / 3600)} hrs ago`;
-
-    return `${Math.floor(diff / 86400)} day ago`;
+    if (diff < 60) return `${diff}s ago`;
+    if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+    if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
+    return `${Math.floor(diff / 86400)}d ago`;
   };
 
   return (
     <motion.div
       layout
-      initial={{
-        opacity: 0,
-        y: 20,
-      }}
-      animate={{
-        opacity: 1,
-        y: 0,
-      }}
-      exit={{
-        opacity: 0,
-      }}
-      className={`rounded-2xl border p-6 shadow-sm transition-all duration-300 hover:shadow-lg ${
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0 }}
+      className={`rounded-3xl border p-5 shadow-sm transition-all duration-300 ${
         notification.isRead
-          ? "bg-white"
-          : "border-blue-500 bg-blue-50"
+          ? "bg-white border-slate-200/80"
+          : "border-blue-300 bg-gradient-to-r from-blue-50/70 to-indigo-50/70 shadow-blue-500/5"
       }`}
     >
-      <div className="flex justify-between">
-
-        <div className="flex gap-4">
-
+      <div className="flex items-start justify-between gap-4">
+        <div className="flex items-start gap-3.5">
           <div
-            className={`flex h-12 w-12 items-center justify-center rounded-full ${
+            className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-2xl ${
               notification.isRead
-                ? "bg-gray-100"
-                : "bg-blue-600 text-white"
+                ? "bg-slate-100 text-slate-500"
+                : "bg-blue-600 text-white shadow-md shadow-blue-500/20"
             }`}
           >
-            <FiBell size={22} />
+            <FiBell size={18} />
           </div>
 
           <div>
+            <div className="flex items-center gap-2">
+              <h3 className="text-sm font-bold text-slate-900">
+                {notification.title}
+              </h3>
+              {!notification.isRead && (
+                <span className="rounded-full bg-blue-600 px-2 py-0.5 text-[10px] font-bold text-white">
+                  NEW
+                </span>
+              )}
+            </div>
 
-            <h3 className="text-lg font-bold text-slate-800">
-              {notification.title}
-            </h3>
-
-            <p className="mt-2 text-slate-600">
+            <p className="mt-1 text-xs text-slate-600 leading-relaxed">
               {notification.message}
             </p>
 
-            <p className="mt-3 text-sm text-slate-400">
-              {formatTime(
-                notification.createdAt
-              )}
+            <p className="mt-2 text-[11px] font-medium text-slate-400">
+              {formatTime(notification.createdAt)}
             </p>
-
           </div>
-
         </div>
 
-        {!notification.isRead && (
-          <span className="h-fit rounded-full bg-blue-600 px-3 py-1 text-xs font-semibold text-white">
-            NEW
-          </span>
-        )}
+        <div className="flex items-center gap-2">
+          {!notification.isRead && (
+            <button
+              onClick={() => onRead(notification._id)}
+              className="flex items-center gap-1 rounded-xl bg-emerald-600 px-3 py-1.5 text-xs font-bold text-white shadow-sm hover:bg-emerald-700 transition-colors cursor-pointer"
+            >
+              <FiCheck /> Read
+            </button>
+          )}
 
-      </div>
-
-      <div className="mt-6 flex gap-3">
-
-        {!notification.isRead && (
           <button
-            onClick={() =>
-              onRead(notification._id)
-            }
-            className="flex items-center gap-2 rounded-xl bg-green-600 px-4 py-2 text-white transition hover:bg-green-700"
+            onClick={() => onDelete(notification._id)}
+            className="flex items-center gap-1 rounded-xl border border-slate-200 bg-white p-2 text-xs font-bold text-rose-500 hover:bg-rose-50 transition-colors cursor-pointer"
+            title="Delete notification"
           >
-            <FiCheck />
-
-            Mark Read
+            <FiTrash2 />
           </button>
-        )}
-
-        <button
-          onClick={() =>
-            onDelete(notification._id)
-          }
-          className="flex items-center gap-2 rounded-xl bg-red-600 px-4 py-2 text-white transition hover:bg-red-700"
-        >
-          <FiTrash2 />
-
-          Delete
-        </button>
-
+        </div>
       </div>
-
     </motion.div>
   );
 };

@@ -1,218 +1,151 @@
 import { motion } from "framer-motion";
 import SearchBox from "./SearchBox";
 import heroImage from "../../assets/images/hero.png";
+import { FiCheckCircle, FiStar, FiShield, FiUsers, FiClock } from "react-icons/fi";
 
 const Hero = () => {
   return (
-    <section className="relative overflow-hidden bg-gradient-to-br from-[#F8FAFC] via-white to-[#EEF5FF]">
+    <section className="relative overflow-hidden bg-gradient-to-b from-slate-50 via-blue-50/30 to-white pt-10 pb-20 lg:pt-16 lg:pb-28">
+      {/* Decorative Glow Background Blobs */}
+      <div className="pointer-events-none absolute -left-32 top-10 h-96 w-96 rounded-full bg-blue-400/15 blur-[120px]"></div>
+      <div className="pointer-events-none absolute -right-32 top-20 h-96 w-96 rounded-full bg-indigo-400/15 blur-[120px]"></div>
 
-      {/* Blur Background */}
+      <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 items-center gap-12 lg:grid-cols-12">
+          {/* Left Hero Content */}
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="lg:col-span-7 space-y-6 text-center lg:text-left"
+          >
+            {/* Top Pill */}
+            <div className="inline-flex items-center gap-2 rounded-full border border-blue-200/80 bg-white/80 px-4 py-1.5 shadow-sm backdrop-blur-md">
+              <span className="flex h-2 w-2 rounded-full bg-blue-600 animate-ping"></span>
+              <span className="text-xs font-bold uppercase tracking-wider text-blue-700">
+                Hyperlocal On-Demand Services
+              </span>
+            </div>
 
-      <div className="absolute -left-40 top-0 h-[450px] w-[450px] rounded-full bg-blue-100 opacity-50 blur-[140px]"></div>
+            {/* Main Headline */}
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight text-slate-900 leading-[1.15]">
+              Expert Services, <br className="hidden sm:block" />
+              <span className="bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-600 bg-clip-text text-transparent">
+                Delivered At Your Door.
+              </span>
+            </h1>
 
-      <div className="absolute -right-32 bottom-0 h-[420px] w-[420px] rounded-full bg-cyan-100 opacity-40 blur-[120px]"></div>
+            {/* Subtext */}
+            <p className="mx-auto lg:mx-0 max-w-2xl text-base sm:text-lg leading-relaxed text-slate-600">
+              Connect with background-checked electricians, plumbers, carpenters, cleaners, and mechanics near you in under 60 seconds.
+            </p>
 
-      <div className="relative mx-auto flex min-h-[720px] max-w-7xl items-center justify-between px-8 py-20">
-
-        {/* Left Side */}
-
-        <motion.div
-          initial={{ opacity: 0, x: -60 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{
-            duration: 0.7,
-          }}
-          className="w-full max-w-[620px] xl:max-w-[650px]"
-        >
-
-          <span className="inline-flex items-center rounded-full bg-blue-100 px-5 py-2 text-sm font-semibold uppercase tracking-wider text-blue-600">
-            Trusted Home Services
-          </span>
-
-          <h1 className="mt-8 text-[62px] font-extrabold leading-[72px] tracking-[-2px] text-gray-900">
-
-            Find Trusted
-
-            <span className="block text-blue-600">
-              Local Professionals
-            </span>
-
-            Near You
-
-          </h1>
-
-          <p className="mt-8 max-w-[520px] text-lg leading-8 text-gray-500">
-
-            Book verified electricians, plumbers, cleaners,
-            carpenters and hundreds of trusted professionals in
-            just a few clicks.
-
-          </p>
-
-          {/* Search */}
-
-          <div className="mt-10">
-
+            {/* Search Box Component */}
             <SearchBox />
 
-          </div>
+            {/* Trust Badges */}
+            <div className="pt-6 grid grid-cols-3 gap-4 border-t border-slate-200/60 max-w-xl mx-auto lg:mx-0">
+              <div className="flex flex-col items-center lg:items-start">
+                <span className="text-2xl font-black text-slate-900 flex items-center gap-1">
+                  10K+
+                </span>
+                <span className="text-xs font-medium text-slate-500">Completed Jobs</span>
+              </div>
 
-          {/* Stats */}
+              <div className="flex flex-col items-center lg:items-start border-x border-slate-200/60 px-4">
+                <span className="text-2xl font-black text-slate-900 flex items-center gap-1">
+                  500+
+                </span>
+                <span className="text-xs font-medium text-slate-500">Verified Pros</span>
+              </div>
 
-          <div className="mt-12 flex gap-12">
-
-            <div>
-
-              <h2 className="text-3xl font-extrabold text-blue-600">
-                10K+
-              </h2>
-
-              <p className="mt-2 text-gray-500">
-                Happy Customers
-              </p>
-
+              <div className="flex flex-col items-center lg:items-start">
+                <span className="text-2xl font-black text-slate-900 flex items-center gap-1">
+                  4.9 <FiStar className="text-amber-400 fill-amber-400 text-lg" />
+                </span>
+                <span className="text-xs font-medium text-slate-500">Avg Rating</span>
+              </div>
             </div>
-
-            <div>
-
-              <h2 className="text-3xl font-extrabold text-blue-600">
-                500+
-              </h2>
-
-              <p className="mt-2 text-gray-500">
-                Verified Experts
-              </p>
-
-            </div>
-
-            <div>
-
-              <h2 className="text-3xl font-extrabold text-blue-600">
-                4.9★
-              </h2>
-
-              <p className="mt-2 text-gray-500">
-                Average Rating
-              </p>
-
-            </div>
-
-          </div>
-
-        </motion.div>
-
-        {/* Right Side */}
-
-        <motion.div
-          initial={{
-            opacity: 0,
-            x: 60,
-          }}
-          animate={{
-            opacity: 1,
-            x: 0,
-          }}
-          transition={{
-            duration: 0.7,
-          }}
-          className="relative"
-        >
-
-          <div className="relative flex h-[600px] w-[560px] items-center justify-center rounded-[40px] bg-white shadow-[0_40px_100px_rgba(0,0,0,0.08)]">
-                        <img
-              src={heroImage}
-              alt="Hero"
-              className="w-[500px] object-contain drop-shadow-2xl"
-            />
-
-          </div>
-
-          {/* Experience Card */}
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{
-              delay: 0.4,
-            }}
-            className="absolute -left-10 top-12 rounded-3xl bg-white px-6 py-5 shadow-2xl"
-          >
-
-            <h3 className="text-3xl font-bold text-blue-600">
-              10K+
-            </h3>
-
-            <p className="mt-1 text-sm text-gray-500">
-              Verified Experts
-            </p>
-
           </motion.div>
 
-          {/* Rating Card */}
-
+          {/* Right Visual Image & Floating Glass Cards */}
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{
-              delay: 0.6,
-            }}
-            className="absolute -right-10 top-24 rounded-3xl bg-white px-6 py-5 shadow-2xl"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.7, delay: 0.2 }}
+            className="lg:col-span-5 relative flex justify-center"
           >
+            <div className="relative w-full max-w-[480px]">
+              {/* Outer decorative ring */}
+              <div className="absolute inset-0 rounded-[40px] bg-gradient-to-tr from-blue-600/20 to-indigo-600/20 blur-2xl transform rotate-3"></div>
 
-            <h3 className="text-3xl font-bold text-yellow-500">
-              ★ 4.9
-            </h3>
+              {/* Main Image Frame */}
+              <div className="relative overflow-hidden rounded-[36px] border border-white/80 bg-gradient-to-b from-white to-blue-50/50 p-4 shadow-2xl shadow-blue-900/10">
+                <img
+                  src={heroImage}
+                  alt="Professional Service Technician"
+                  className="w-full h-[420px] object-cover rounded-[28px]"
+                />
+              </div>
 
-            <p className="mt-1 text-sm text-gray-500">
-              Customer Rating
-            </p>
+              {/* Floating Glass Card 1: Verified badge */}
+              <motion.div
+                initial={{ opacity: 0, x: -30 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.5 }}
+                className="absolute left-2 sm:-left-6 top-4 sm:top-10 flex items-center gap-2.5 sm:gap-3 rounded-2xl border border-white/80 bg-white/90 p-2.5 sm:p-3.5 shadow-xl backdrop-blur-md"
+              >
+                <div className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-xl bg-emerald-100 text-emerald-600 shrink-0">
+                  <FiCheckCircle className="text-lg sm:text-xl" />
+                </div>
+                <div>
+                  <p className="text-[11px] sm:text-xs font-bold text-slate-900">Background Checked</p>
+                  <p className="text-[9px] sm:text-[10px] font-semibold text-emerald-600">100% Verified</p>
+                </div>
+              </motion.div>
 
-          </motion.div>
+              {/* Floating Glass Card 2: Rating */}
+              <motion.div
+                initial={{ opacity: 0, x: 30 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.6 }}
+                className="absolute right-2 sm:-right-6 top-24 sm:top-32 flex items-center gap-2.5 sm:gap-3 rounded-2xl border border-white/80 bg-white/90 p-2.5 sm:p-3.5 shadow-xl backdrop-blur-md"
+              >
+                <div className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-xl bg-amber-100 text-amber-600 shrink-0">
+                  <FiStar className="text-lg sm:text-xl fill-amber-500" />
+                </div>
+                <div>
+                  <p className="text-[11px] sm:text-xs font-bold text-slate-900">4.9 / 5.0 Stars</p>
+                  <p className="text-[9px] sm:text-[10px] text-slate-500">Over 3,200 reviews</p>
+                </div>
+              </motion.div>
 
-          {/* Bottom Floating Card */}
-
-          <motion.div
-            initial={{
-              opacity: 0,
-              y: 30,
-            }}
-            animate={{
-              opacity: 1,
-              y: 0,
-            }}
-            transition={{
-              delay: 0.8,
-            }}
-            className="absolute -bottom-8 left-12 flex items-center gap-4 rounded-3xl border border-gray-100 bg-white px-6 py-5 shadow-2xl"
-          >
-
-            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-blue-100">
-
-              <div className="h-7 w-7 rounded-full bg-blue-600"></div>
-
+              {/* Floating Glass Card 3: Rapid response */}
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.7 }}
+                className="absolute -bottom-4 sm:-bottom-6 left-4 right-4 sm:left-8 sm:right-8 flex items-center justify-between rounded-2xl border border-white/80 bg-white/95 p-3 sm:p-4 shadow-xl backdrop-blur-md"
+              >
+                <div className="flex items-center gap-2.5 sm:gap-3">
+                  <div className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-xl bg-blue-100 text-blue-600 shrink-0">
+                    <FiClock className="text-lg sm:text-xl" />
+                  </div>
+                  <div>
+                    <p className="text-[11px] sm:text-xs font-bold text-slate-900">Fast Local Arrival</p>
+                    <p className="text-[9px] sm:text-[10px] text-slate-500">Pros near your zipcode</p>
+                  </div>
+                </div>
+                <span className="rounded-lg bg-blue-50 px-2 sm:px-2.5 py-1 text-[10px] sm:text-[11px] font-bold text-blue-600">
+                  &lt; 30 Mins
+                </span>
+              </motion.div>
             </div>
-
-            <div>
-
-              <h3 className="text-lg font-bold text-gray-900">
-                500+ Professionals
-              </h3>
-
-              <p className="text-sm text-gray-500">
-                Ready to serve near your location
-              </p>
-
-            </div>
-
           </motion.div>
-
-        </motion.div>
-
+        </div>
       </div>
-
     </section>
   );
 };
 
 export default Hero;
-          

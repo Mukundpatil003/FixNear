@@ -1,80 +1,65 @@
 import { motion } from "framer-motion";
-import { FiArrowRight } from "react-icons/fi";
+import { FiArrowRight, FiShield } from "react-icons/fi";
 import { Link } from "react-router-dom";
 
 const OTPForm = () => {
   return (
     <motion.div
-      initial={{ opacity: 0, x: 40 }}
+      initial={{ opacity: 0, x: 20 }}
       animate={{ opacity: 1, x: 0 }}
-      transition={{ duration: 0.6 }}
-      className="flex w-full items-center justify-start px-8 py-12 lg:px-14 xl:px-20"
+      transition={{ duration: 0.5 }}
+      className="flex w-full items-center justify-center px-6 py-12 lg:px-12 xl:px-16"
     >
-      <div className="w-full max-w-[560px]">
-
-        {/* Heading */}
-
-        <h1 className="text-4xl font-extrabold text-gray-900 xl:text-5xl">
-          Verify OTP
-        </h1>
-
-        <p className="mt-3 text-lg leading-8 text-gray-500">
-          We've sent a 6-digit verification code to your registered email.
-          Please enter it below.
-        </p>
-
-        {/* OTP Boxes */}
-
-        <div className="mt-10 flex justify-between gap-4">
-
-          {[1, 2, 3, 4, 5, 6].map((item) => (
-            <input
-              key={item}
-              type="text"
-              maxLength={1}
-              className="h-16 w-16 rounded-2xl border border-gray-300 text-center text-2xl font-bold outline-none transition-all duration-300 focus:border-blue-600 focus:shadow-lg"
-            />
-          ))}
-
+      <div className="w-full max-w-[480px]">
+        <div className="space-y-2">
+          <div className="inline-flex items-center gap-1.5 rounded-full bg-blue-50 px-3 py-1 text-xs font-bold text-blue-600">
+            <FiShield className="text-sm" />
+            2-Factor Verification
+          </div>
+          <h1 className="text-3xl font-black text-slate-900 sm:text-4xl tracking-tight">
+            Verify 6-Digit OTP
+          </h1>
+          <p className="text-xs text-slate-500 leading-relaxed">
+            Enter the 6-digit security code sent to your registered email address.
+          </p>
         </div>
 
-        {/* Verify */}
+        <form onSubmit={(e) => e.preventDefault()} className="mt-8 space-y-6">
+          <div className="grid grid-cols-6 gap-2 sm:gap-3">
+            {[1, 2, 3, 4, 5, 6].map((item) => (
+              <input
+                key={item}
+                type="text"
+                maxLength={1}
+                className="h-12 w-full rounded-xl border border-slate-200 bg-slate-50/50 text-center text-lg font-bold text-slate-900 outline-none focus:border-blue-600 focus:bg-white focus:ring-4 focus:ring-blue-500/10 transition-all"
+              />
+            ))}
+          </div>
 
-        <motion.button
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-          className="mt-10 flex h-16 w-full items-center justify-center gap-3 rounded-2xl bg-gradient-to-r from-blue-600 to-blue-700 text-xl font-bold text-white shadow-lg transition hover:shadow-blue-500/40"
-        >
-          Verify OTP
-
-          <FiArrowRight size={22} />
-        </motion.button>
-
-        {/* Resend */}
-
-        <p className="mt-8 text-center text-gray-600">
-
-          Didn't receive OTP?
-
-          <button className="ml-2 font-bold text-blue-600 hover:underline">
-            Resend OTP
-          </button>
-
-        </p>
-
-        {/* Back */}
-
-        <p className="mt-3 text-center text-gray-600">
-
-          <Link
-            to="/forgot-password"
-            className="font-bold text-blue-600 hover:underline"
+          <motion.button
+            type="submit"
+            whileHover={{ scale: 1.01 }}
+            whileTap={{ scale: 0.98 }}
+            className="flex h-13 w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 text-sm font-bold text-white shadow-lg shadow-blue-600/25 transition-all hover:shadow-blue-600/40 cursor-pointer"
           >
-            Back
-          </Link>
+            Verify Code & Proceed
+            <FiArrowRight className="text-base" />
+          </motion.button>
+        </form>
 
-        </p>
-
+        <div className="mt-8 space-y-2 text-center text-xs font-medium text-slate-500">
+          <p>
+            Didn't receive code?{" "}
+            <button className="font-bold text-blue-600 hover:underline cursor-pointer">
+              Resend OTP
+            </button>
+          </p>
+          <p>
+            <Link to="/forgot-password" className="font-bold text-slate-600 hover:underline">
+              ← Back
+            </Link>
+          </p>
+        </div>
       </div>
     </motion.div>
   );

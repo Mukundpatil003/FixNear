@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import toast from "react-hot-toast";
 import {
   getProfile,
   updateProfile,
@@ -8,12 +9,12 @@ import ProfileCard from "../../components/customer/profile/ProfileCard";
 import ProfileImageUpload from "../../components/customer/profile/ProfileImageUpload";
 import ProfileForm from "../../components/customer/profile/ProfileForm";
 import useAuth from "../../hooks/useAuth";
+
 const Profile = () => {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const { user, updateUser } = useAuth();
-  
 
   useEffect(() => {
     fetchProfile();
@@ -25,7 +26,7 @@ const Profile = () => {
       setProfile(data.profile);
     } catch (err) {
       console.error(err);
-      alert("Failed to load profile");
+      toast.error("Failed to load profile");
     } finally {
       setLoading(false);
     }
@@ -38,70 +39,67 @@ const Profile = () => {
     });
   };
 
- const handleSave = async () => {
-  try {
-    setSaving(true);
+  const handleSave = async () => {
+    try {
+      setSaving(true);
+      const data = await updateProfile(profile);
+      setProfile(data.profile);
 
-    const data = await updateProfile(profile);
+      updateUser({
+        ...user,
+        name: data.profile.name,
+        email: data.profile.email,
+        phone: data.profile.phone,
+        location: data.profile.location,
+        profileImage: data.profile.profileImage,
+      });
 
-    setProfile(data.profile);
-
-    // ⭐ Update Auth Context (Navbar updates instantly)
-    updateUser({
-      ...user,
-      name: data.profile.name,
-      email: data.profile.email,
-      phone: data.profile.phone,
-      location: data.profile.location,
-      profileImage: data.profile.profileImage,
-    });
-
-    alert("Profile Updated Successfully");
-
-  } catch (err) {
-    console.error(err);
-    alert("Failed to update profile");
-  } finally {
-    setSaving(false);
-  }
-};
+      toast.success("Profile updated successfully!");
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to update profile");
+    } finally {
+      setSaving(false);
+    }
+  };
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-screen text-xl font-semibold">
-        Loading Profile...
+      <div className="flex h-96 items-center justify-center">
+        <div className="flex flex-col items-center gap-3">
+          <div className="h-10 w-10 animate-spin rounded-full border-4 border-blue-600 border-t-transparent"></div>
+          <p className="text-xs font-bold text-slate-500">Loading Profile...</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="bg-gray-100 min-h-screen p-8">
-      <div className="max-w-5xl mx-auto bg-white rounded-3xl shadow-lg p-8">
-
-        <h1 className="text-3xl font-bold mb-8">
-          My Profile
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-2xl font-black tracking-tight text-slate-900 sm:text-3xl">
+          Account Profile
         </h1>
+        <p className="text-xs text-slate-500 mt-1">
+          Manage your personal information and contact preferences.
+        </p>
+      </div>
 
-        <div className="grid lg:grid-cols-3 gap-8">
+      <div className="grid lg:grid-cols-3 gap-6">
+        <ProfileCard profile={profile} />
 
-          <ProfileCard profile={profile} />
+        <div className="lg:col-span-2 space-y-6">
+          <ProfileImageUpload
+            profile={profile}
+            setProfile={setProfile}
+          />
 
-          <div className="lg:col-span-2 space-y-6">
-
-            <ProfileImageUpload
-              profile={profile}
-              setProfile={setProfile}
-            />
-
-            <ProfileForm
-              profile={profile}
-              handleChange={handleChange}
-              handleSave={handleSave}
-              saving={saving}
-            />
-
-          </div>
-
+          <ProfileForm
+            profile={profile}
+            handleChange={handleChange}
+            handleSave={handleSave}
+            saving={saving}
+          />
         </div>
       </div>
     </div>

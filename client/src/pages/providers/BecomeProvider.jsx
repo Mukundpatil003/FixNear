@@ -4,18 +4,23 @@ import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { becomeProvider } from "../../api/providerApi";
 import useAuth from "../../hooks/useAuth";
+import Navbar from "../../components/layout/Navbar";
+import Footer from "../../components/layout/Footer";
+
+import CustomSelect from "../../components/ui/CustomSelect";
 
 import {
   FaMapMarkerAlt,
   FaMoneyBillWave,
-  FaBriefcase,
   FaClock,
   FaShieldAlt,
+  FaCheckCircle
 } from "react-icons/fa";
+import { FiArrowRight, FiCheckCircle as FiCheck } from "react-icons/fi";
 
 const BecomeProvider = () => {
   const navigate = useNavigate();
-const { login } = useAuth();
+  const { login } = useAuth();
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
 
@@ -37,530 +42,324 @@ const { login } = useAuth();
     }));
   };
 
-const getCurrentLocation = () => {
+  const getCurrentLocation = () => {
+    if (!navigator.geolocation) {
+      return toast.error("Geolocation not supported by browser");
+    }
 
-  if (!navigator.geolocation) {
-    return toast.error("Geolocation not supported");
-  }
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const latitude = position.coords.latitude;
+        const longitude = position.coords.longitude;
 
-  navigator.geolocation.getCurrentPosition(
+        try {
+          const res = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`
+          );
 
-    async (position) => {
+          const data = await res.json();
 
-      const latitude = position.coords.latitude;
-      const longitude = position.coords.longitude;
+          setFormData((prev) => ({
+            ...prev,
+            latitude,
+            longitude,
+            address: data.display_name || "",
+          }));
 
-      try {
-
-        const res = await fetch(
-          `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`
-        );
-
-        const data = await res.json();
-
-        setFormData((prev) => ({
-          ...prev,
-          latitude,
-          longitude,
-          address: data.display_name || "",
-        }));
-
-        toast.success("Location Detected");
-
-      } catch (err) {
-
-        toast.error("Failed to fetch address");
-
+          toast.success("Location coordinates locked!");
+        } catch (err) {
+          toast.error("Failed to fetch reverse address");
+        }
+      },
+      (error) => {
+        console.log(error);
+        toast.error("Location permission denied");
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0,
       }
+    );
+  };
 
-    },
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
-    (error) => {
-
-      console.log(error);
-
-      toast.error("Location Permission Denied");
-
-    },
-
-    {
-      enableHighAccuracy: true,
-      timeout: 10000,
-      maximumAge: 0,
+    if (!formData.service) {
+      return toast.error("Please select a service category");
+    }
+    if (!formData.experience) {
+      return toast.error("Please enter years of experience");
+    }
+    if (!/^[6-9]\d{9}$/.test(formData.phone)) {
+      return toast.error("Enter a valid 10-digit mobile number");
+    }
+    if (Number(formData.experience) <= 0) {
+      return toast.error("Experience must be greater than 0");
+    }
+    if (!formData.address) {
+      return toast.error("Please enter your service address");
+    }
+    if (Number(formData.pricePerHour) < 100) {
+      return toast.error("Minimum price rate is ₹100/hr");
+    }
+    if (formData.description.length < 20) {
+      return toast.error("Description must contain at least 20 characters");
+    }
+    if (!formData.latitude || !formData.longitude) {
+      return toast.error("Please click GPS icon to capture your location");
     }
 
-  );
+    try {
+      setLoading(true);
+      const data = await becomeProvider(formData);
 
-};
-const handleSubmit = async (e) => {
-  e.preventDefault();
+      if (data.success) {
+        setSuccess(true);
+        toast.success("Provider account setup successful!");
 
-  // Validation
-
-  if (!formData.service) {
-    return toast.error("Please select service");
-  }
-
-  if (!formData.experience) {
-    return toast.error("Please enter experience");
-  }
-  
-  if (!/^[6-9]\d{9}$/.test(formData.phone)) {
-  return toast.error("Enter Valid Phone Number");
-}
-if (Number(formData.experience) <= 0) {
-  return toast.error(
-    "Experience should be greater than 0"
-  );
-
-}
-
-  if (formData.phone.length !== 10) {
-    return toast.error("Phone number must be 10 digits");
-  }
-
-  if (!formData.address) {
-    return toast.error("Please enter address");
-  }
-if (Number(formData.pricePerHour) < 100) {
-  return toast.error(
-    "Minimum Price ₹100"
-  );
-}
-  if (formData.description.length < 20) {
-  return toast.error(
-    "Description must contain at least 20 characters"
-  );
-}
-
-  if (
-    !formData.latitude ||
-    !formData.longitude
-  ) {
-    return toast.error(
-      "Please capture your current location"
-    );
-  }
-
-  try {
-
-    setLoading(true);
-
-    const data = await becomeProvider(formData);
-
-    if (data.success) {
-
-      setSuccess(true);
-
-setTimeout(() => {
-
-   login(data.user);
-
-   navigate("/provider/profile");
-
-},1500);
-
+        setTimeout(() => {
+          login(data.user);
+          navigate("/provider/profile");
+        }, 1200);
+      }
+    } catch (error) {
+      toast.error(
+        error.response?.data?.message || "Registration failed"
+      );
+    } finally {
+      setLoading(false);
     }
+  };
 
-  } catch (error) {
-
-    toast.error(
-      error.response?.data?.message ||
-      "Something went wrong"
-    );
-
-  } finally {
-
-    setLoading(false);
-
-  }
-
-};
   return (
-    <section className="min-h-screen bg-gradient-to-br from-[#F8FAFC] to-[#EEF5FF] py-16">
-        {
-loading && (
+    <div className="min-h-screen bg-slate-50/70">
+      <Navbar />
 
-<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm">
-
-<div className="rounded-3xl bg-white p-8 shadow-2xl">
-
-<div className="mx-auto h-14 w-14 animate-spin rounded-full border-4 border-blue-600 border-t-transparent"/>
-
-<p className="mt-5 font-bold">
-
-Creating Provider Profile...
-
-</p>
-
-</div>
-
-</div>
-
-)
-}
-
-      <div className="mx-auto grid max-w-7xl grid-cols-1 gap-12 px-8 lg:grid-cols-2">
-
-        {/* LEFT */}
-
-        <motion.div
-          initial={{
-            opacity: 0,
-            x: -50,
-          }}
-          animate={{
-            opacity: 1,
-            x: 0,
-          }}
-          transition={{
-            duration: 0.6,
-          }}
-        >
-
-          <span className="rounded-full bg-blue-100 px-5 py-2 text-sm font-semibold uppercase tracking-wider text-blue-600">
-            Join Our Network
-          </span>
-
-          <h1 className="mt-8 text-6xl font-extrabold leading-tight">
-
-            Earn More By Joining
-
-            <span className="block text-blue-600">
-              FixNear
-            </span>
-
-          </h1>
-
-          <p className="mt-8 text-xl leading-9 text-gray-500">
-
-            Empowering skilled professionals with the tools
-            to grow their business, reach more customers,
-            and manage bookings effortlessly.
-
-          </p>
-
-          <div className="mt-14 space-y-10">
-
-            <div className="flex gap-5">
-
-              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-100">
-
-                <FaMoneyBillWave className="text-xl text-blue-600" />
-
-              </div>
-
-              <div>
-
-                <h3 className="text-2xl font-bold">
-                  Earn upto ₹50,000/month
-                </h3>
-
-                <p className="mt-2 text-gray-500">
-                  Get bookings regularly and grow
-                  your income.
-                </p>
-
-              </div>
-
+      <section className="py-12 lg:py-16">
+        {loading && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 backdrop-blur-sm">
+            <div className="rounded-3xl bg-white p-8 text-center shadow-2xl">
+              <div className="mx-auto h-12 w-12 animate-spin rounded-full border-4 border-blue-600 border-t-transparent"></div>
+              <p className="mt-4 text-xs font-bold text-slate-800">
+                Setting Up Provider Account...
+              </p>
             </div>
-
-            <div className="flex gap-5">
-
-              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-100">
-
-                <FaClock className="text-xl text-blue-600" />
-
-              </div>
-
-              <div>
-
-                <h3 className="text-2xl font-bold">
-                  Flexible Hours
-                </h3>
-
-                <p className="mt-2 text-gray-500">
-                  Work whenever you want.
-                </p>
-
-              </div>
-
-            </div>
-
-            <div className="flex gap-5">
-
-              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-100">
-
-                <FaShieldAlt className="text-xl text-blue-600" />
-
-              </div>
-
-              <div>
-
-                <h3 className="text-2xl font-bold">
-                  Verified Customers
-                </h3>
-
-                <p className="mt-2 text-gray-500">
-                  Only genuine customers can
-                  book your services.
-                </p>
-
-              </div>
-
-            </div>
-
           </div>
+        )}
 
-        </motion.div>
-
-        {/* RIGHT */}
-
-        <motion.div
-          initial={{
-            opacity: 0,
-            x: 50,
-          }}
-          animate={{
-            opacity: 1,
-            x: 0,
-          }}
-          transition={{
-            duration: 0.6,
-          }}
-          className="rounded-3xl bg-white p-10 shadow-2xl"
-        >
-
-          <h2 className="text-center text-5xl font-bold">
-
-            Create Your Profile
-
-          </h2>
-
-          <p className="mt-3 text-center text-gray-500">
-
-            Takes less than 3 minutes to get started
-
-          </p>
-
-      <form
-                onSubmit={handleSubmit}
-              className="mt-10 space-y-7"
-    >
-            {/* Service */}
-
-            <div>
-
-              <label className="mb-2 block font-semibold">
-                Service Category
-              </label>
-
-              <select
-                name="service"
-                value={formData.service}
-                onChange={handleChange}
-                className="h-14 w-full rounded-xl border px-4"
-              >
-
-                <option value="">
-                  Select Service
-                </option>
-
-               <option value="Electrician">
-Electrician
-</option>
-
-<option value="Plumber">
-Plumber
-</option>
-
-<option value="Cleaner">
-Cleaner
-</option>
-
-<option value="Carpenter">
-Carpenter
-</option>
-
-<option value="Painter">
-Painter
-</option>
-
-<option value="AC Technician">
-AC Technician
-</option>
-              </select>
-
+        <div className="mx-auto grid max-w-7xl grid-cols-1 items-start gap-12 px-4 sm:px-6 lg:px-8 lg:grid-cols-12">
+          {/* Left Feature Value Banner */}
+          <motion.div
+            initial={{ opacity: 0, x: -30 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.5 }}
+            className="lg:col-span-6 space-y-6"
+          >
+            <div className="inline-flex items-center gap-1.5 rounded-full bg-blue-50 px-3 py-1 text-xs font-bold text-blue-600 uppercase tracking-wider">
+              <FiCheck className="text-sm" />
+              Join Professional Partner Network
             </div>
 
-            {/* Experience */}
+            <h1 className="text-4xl sm:text-5xl font-black tracking-tight text-slate-900 leading-[1.15]">
+              Grow Your Service Business With{" "}
+              <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                FixNear
+              </span>
+            </h1>
 
+            <p className="text-sm leading-relaxed text-slate-600">
+              Get direct customer leads, set your own hourly rates, manage requests with real-time GPS tracking, and receive instant payments.
+            </p>
+
+            {/* Benefit Items */}
+            <div className="space-y-6 pt-4">
+              <div className="flex gap-4 items-start">
+                <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-2xl bg-blue-50 text-blue-600">
+                  <FaMoneyBillWave className="text-xl" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-slate-900">High Earning Potential</h3>
+                  <p className="text-xs text-slate-500 mt-1">Earn up to ₹50,000/month with zero upfront registration fees.</p>
+                </div>
+              </div>
+
+              <div className="flex gap-4 items-start">
+                <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600">
+                  <FaClock className="text-xl" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-slate-900">Total Hours Flexibility</h3>
+                  <p className="text-xs text-slate-500 mt-1">Toggle your Online / Offline availability switch whenever you want to work.</p>
+                </div>
+              </div>
+
+              <div className="flex gap-4 items-start">
+                <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600">
+                  <FaShieldAlt className="text-xl" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-slate-900">100% Genuine Local Bookings</h3>
+                  <p className="text-xs text-slate-500 mt-1">Connect with verified customers in your immediate zipcode radius.</p>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+
+          {/* Right Form Card */}
+          <motion.div
+            initial={{ opacity: 0, x: 30 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.5 }}
+            className="lg:col-span-6 rounded-3xl border border-slate-200/80 bg-white p-6 sm:p-8 shadow-sm space-y-6"
+          >
             <div>
-
-              <label className="mb-2 block font-semibold">
-                Experience
-              </label>
-
-              <input
-                type="number"
-                name="experience"
-                value={formData.experience}
-                onChange={handleChange}
-                placeholder="Years of Experience"
-                className="h-14 w-full rounded-xl border px-4"
-              />
-
+              <h2 className="text-2xl font-black text-slate-900 tracking-tight">
+                Create Provider Profile
+              </h2>
+              <p className="text-xs text-slate-500 mt-1">
+                Fill in your skills and location details to start accepting jobs.
+              </p>
             </div>
 
-            {/* Phone */}
+            <form onSubmit={handleSubmit} className="space-y-4 text-xs">
+              {/* Service */}
+              <div>
+                <label className="mb-1.5 block font-bold uppercase tracking-wider text-slate-700">
+                  Select Service Specialty *
+                </label>
+                <CustomSelect
+                  name="service"
+                  value={formData.service}
+                  onChange={handleChange}
+                  placeholder="Choose your primary skill"
+                  options={[
+                    "Electrician",
+                    "Plumber",
+                    "Cleaner",
+                    "Carpenter",
+                    "Painter",
+                    "AC Technician",
+                  ]}
+                />
+              </div>
 
-            <div>
+              {/* Experience */}
+              <div>
+                <label className="mb-1.5 block font-bold uppercase tracking-wider text-slate-700">
+                  Years of Experience *
+                </label>
+                <input
+                  type="number"
+                  name="experience"
+                  value={formData.experience}
+                  onChange={handleChange}
+                  placeholder="e.g. 5"
+                  className="w-full rounded-2xl border border-slate-200/80 bg-slate-50/50 p-3.5 font-semibold text-slate-800 outline-none focus:border-blue-600 focus:bg-white focus:ring-4 focus:ring-blue-500/10 transition-all"
+                />
+              </div>
 
-              <label className="mb-2 block font-semibold">
-                Phone Number
-              </label>
-
-              <input
-                type="text"
-                name="phone"
-                value={formData.phone}
-                onChange={handleChange}
-                placeholder="9876543210"
-                className="h-14 w-full rounded-xl border px-4"
-              />
-
-            </div>
-
-            {/* Address */}
-
-            <div>
-
-              <label className="mb-2 block font-semibold">
-                Address
-              </label>
-
-              <div className="relative">
-
+              {/* Phone */}
+              <div>
+                <label className="mb-1.5 block font-bold uppercase tracking-wider text-slate-700">
+                  Mobile Number *
+                </label>
                 <input
                   type="text"
-                  name="address"
-                  value={formData.address}
+                  name="phone"
+                  value={formData.phone}
                   onChange={handleChange}
-                  placeholder="Enter Full Address"
-                  className="h-14 w-full rounded-xl border px-4 pr-14"
+                  placeholder="10-digit mobile number"
+                  className="w-full rounded-2xl border border-slate-200/80 bg-slate-50/50 p-3.5 font-semibold text-slate-800 outline-none focus:border-blue-600 focus:bg-white focus:ring-4 focus:ring-blue-500/10 transition-all"
                 />
-
-                <button
-                  type="button"
-                  onClick={getCurrentLocation}
-                  className="absolute right-4 top-4"
-                >
-
-                  <FaMapMarkerAlt
-                    className="text-2xl text-blue-600"
-                  />
-
-                </button>
-
               </div>
 
-            </div>
+              {/* Address with GPS */}
+              <div>
+                <label className="mb-1.5 block font-bold uppercase tracking-wider text-slate-700">
+                  Service Base Address & GPS *
+                </label>
+                <div className="relative flex items-center">
+                  <input
+                    type="text"
+                    name="address"
+                    value={formData.address}
+                    onChange={handleChange}
+                    placeholder="Enter address or click location pin ->"
+                    className="w-full rounded-2xl border border-slate-200/80 bg-slate-50/50 p-3.5 pr-12 font-semibold text-slate-800 outline-none focus:border-blue-600 focus:bg-white focus:ring-4 focus:ring-blue-500/10 transition-all"
+                  />
+                  <button
+                    type="button"
+                    onClick={getCurrentLocation}
+                    className="absolute right-3.5 text-rose-500 hover:text-rose-600 p-1"
+                    title="Detect Current Location"
+                  >
+                    <FaMapMarkerAlt className="text-lg" />
+                  </button>
+                </div>
+              </div>
 
-            {/* Price */}
+              {/* Hourly Price Range */}
+              <div>
+                <div className="flex justify-between items-center mb-1.5">
+                  <label className="font-bold uppercase tracking-wider text-slate-700">
+                    Hourly Service Rate (₹)
+                  </label>
+                  <span className="font-black text-blue-600 text-sm">
+                    ₹{formData.pricePerHour}/hr
+                  </span>
+                </div>
+                <input
+                  type="range"
+                  min="100"
+                  max="5000"
+                  step="50"
+                  name="pricePerHour"
+                  value={formData.pricePerHour}
+                  onChange={handleChange}
+                  className="w-full accent-blue-600 cursor-pointer"
+                />
+              </div>
 
-            <div>
+              {/* Description */}
+              <div>
+                <label className="mb-1.5 block font-bold uppercase tracking-wider text-slate-700">
+                  Bio / Skills Overview *
+                </label>
+                <textarea
+                  rows={4}
+                  name="description"
+                  value={formData.description}
+                  onChange={handleChange}
+                  placeholder="Describe your skills, qualifications, tools and availability..."
+                  className="w-full rounded-2xl border border-slate-200/80 bg-slate-50/50 p-3.5 font-semibold text-slate-800 outline-none focus:border-blue-600 focus:bg-white focus:ring-4 focus:ring-blue-500/10 transition-all"
+                />
+              </div>
 
-              <label className="mb-2 block font-semibold">
-                Price Per Hour ₹
-              </label>
+              {/* Submit */}
+              <button
+                type="submit"
+                disabled={loading}
+                className="flex h-13 w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 text-sm font-bold text-white shadow-lg shadow-blue-600/20 transition-all hover:shadow-xl disabled:opacity-70 cursor-pointer mt-4"
+              >
+                {loading ? "Registering Profile..." : "Submit & Start Receiving Jobs"}
+                {!loading && <FiArrowRight className="text-base" />}
+              </button>
 
-              <input
-                type="range"
-                min="100"
-                max="5000"
-                step="100"
-                name="pricePerHour"
-                value={formData.pricePerHour}
-                onChange={handleChange}
-                className="w-full"
-              />
+              {success && (
+                <div className="mt-4 flex items-center justify-center gap-2 rounded-2xl bg-emerald-50 p-3 text-emerald-700 font-bold">
+                  <FaCheckCircle className="text-base" />
+                  Provider account created successfully!
+                </div>
+              )}
+            </form>
+          </motion.div>
+        </div>
+      </section>
 
-              <p className="mt-2 text-center text-2xl font-bold text-blue-600">
-
-                ₹{formData.pricePerHour}
-
-              </p>
-
-            </div>
-
-            {/* Description */}
-
-            <div>
-
-              <label className="mb-2 block font-semibold">
-                About You
-              </label>
-
-              <textarea
-                rows={5}
-                name="description"
-                value={formData.description}
-                onChange={handleChange}
-                placeholder="Describe your skills..."
-                className="w-full rounded-xl border p-4"
-              />
-
-            </div>
-
-            {/* Button */}
-
-           <button
-type="submit"
-disabled={loading}
-className="h-14 w-full rounded-xl bg-blue-600 text-lg font-bold text-white transition hover:bg-blue-700 disabled:opacity-70"
->
-
-{loading
-? "Creating Profile..."
-: "Continue"}
-
-</button>
-{success && (
-
-<motion.div
-
-initial={{
-opacity:0,
-scale:0.8
-}}
-
-animate={{
-opacity:1,
-scale:1
-}}
-
-className="mt-6 flex items-center justify-center gap-3 rounded-xl bg-green-50 p-4"
-
->
-
-<FaCheckCircle className="text-green-600 text-xl" />
-<p className="font-semibold text-green-700">
-
-Provider Profile Created Successfully
-
-</p>
-
-</motion.div>
-
-)}
-          </form>
-
-        </motion.div>
-
-      </div>
-
-    </section>
-    
+      <Footer />
+    </div>
   );
 };
 

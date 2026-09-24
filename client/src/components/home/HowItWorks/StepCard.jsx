@@ -5,46 +5,31 @@ const StepCard = ({ step, number }) => {
 
   return (
     <motion.div
-      whileHover={{
-        y: -8,
-        scale: 1.02,
-      }}
-      transition={{ duration: 0.3 }}
-      className="group relative rounded-3xl border border-gray-100 bg-white p-6 text-center shadow-md transition-all duration-500 hover:border-blue-100 hover:shadow-xl"
+      whileHover={{ y: -6, scale: 1.02 }}
+      transition={{ duration: 0.25 }}
+      className="group relative flex flex-col items-center rounded-3xl border border-slate-200/70 bg-white p-7 text-center shadow-sm transition-all duration-300 hover:border-blue-300 hover:shadow-xl hover:shadow-blue-500/10"
     >
-      {/* Step Number */}
-
-      <div className="absolute -top-4 left-1/2 flex h-9 w-9 -translate-x-1/2 items-center justify-center rounded-full bg-blue-600 text-sm font-bold text-white shadow-lg">
-        {number}
+      {/* Number Badge */}
+      <div className="absolute -top-4 flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-xs font-black text-white shadow-md shadow-blue-500/30 ring-4 ring-white">
+        0{number}
       </div>
 
-      {/* Icon */}
-
-      <div className="mx-auto mt-5 mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-blue-600 to-blue-700 text-white shadow-lg transition-all duration-500 group-hover:scale-110 group-hover:rotate-6">
-
-        <Icon size={28} />
-
+      {/* Icon Circle */}
+      <div className="mt-4 mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-blue-50 text-blue-600 transition-all duration-300 group-hover:bg-gradient-to-tr group-hover:from-blue-600 group-hover:to-indigo-600 group-hover:text-white group-hover:shadow-lg group-hover:shadow-blue-500/30 group-hover:scale-110">
+        <Icon className="text-2xl" />
       </div>
 
-      {/* Title */}
-
-      <h3 className="text-xl font-bold text-gray-900">
+      {/* Content */}
+      <h3 className="text-lg font-bold text-slate-900 transition-colors group-hover:text-blue-600">
         {step.title}
       </h3>
 
-      {/* Description */}
-
-      <p className="mt-3 text-sm leading-7 text-gray-500">
+      <p className="mt-2 text-xs leading-relaxed text-slate-500">
         {step.description}
       </p>
 
-      {/* Bottom Line */}
-
-      <div className="mx-auto mt-6 h-1 w-10 rounded-full bg-blue-100 transition-all duration-500 group-hover:w-20 group-hover:bg-blue-600"></div>
-
-      {/* Glow */}
-
-      <div className="absolute -right-10 -top-10 h-24 w-24 rounded-full bg-blue-50 opacity-0 blur-2xl transition-all duration-500 group-hover:opacity-100"></div>
+      {/* Accent Indicator */}
+      <div className="mt-6 h-1 w-8 rounded-full bg-slate-200 transition-all duration-300 group-hover:w-16 group-hover:bg-blue-600"></div>
     </motion.div>
   );
 };

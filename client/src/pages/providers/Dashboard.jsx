@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 
-import Sidebar from "../../components/provider/Sidebar";
 import Topbar from "../../components/provider/Topbar";
 import DashboardCards from "../../components/provider/DashboardCards";
 import socket from "../../socket/socket";
@@ -22,90 +21,70 @@ const Dashboard = () => {
   }, []);
 
   useEffect(() => {
-  if (!provider) return;
-
-  socket.connect();
-
-  socket.emit("join", provider.user._id);
-
-  return () => {
-    socket.disconnect();
-  };
-}, [provider]);
-
-useEffect(() => {
-
-  if (!provider) return;
-
-  if (!provider._id) return;
-
-  if (!socket.connected) {
+    if (!provider) return;
     socket.connect();
-  }
+    socket.emit("join", provider.user._id);
 
-  const interval = setInterval(() => {
+    return () => {
+      socket.disconnect();
+    };
+  }, [provider]);
 
-    navigator.geolocation.getCurrentPosition(async (position) => {
+  useEffect(() => {
+    if (!provider) return;
+    if (!provider._id) return;
 
-      const latitude = position.coords.latitude;
-      const longitude = position.coords.longitude;
+    if (!socket.connected) {
+      socket.connect();
+    }
 
-      socket.emit("providerLocation",{
-        providerId: provider._id,
-        latitude,
-        longitude
-      });
+    const interval = setInterval(() => {
+      navigator.geolocation.getCurrentPosition(async (position) => {
+        const latitude = position.coords.latitude;
+        const longitude = position.coords.longitude;
 
-      try{
-
-        await updateProviderLocation({
+        socket.emit("providerLocation", {
+          providerId: provider._id,
           latitude,
           longitude
         });
 
-      }catch(err){
+        try {
+          await updateProviderLocation({
+            latitude,
+            longitude
+          });
+        } catch (err) {
+          console.log(err);
+        }
+      });
+    }, 5000);
 
-        console.log(err);
+    return () => {
+      clearInterval(interval);
+    };
+  }, [provider]);
 
+  const loadDashboard = async () => {
+    try {
+      setLoading(true);
+      const dashboardRes = await getProviderDashboard();
+      const profileRes = await getProviderProfile();
+
+      if (dashboardRes.success) {
+        setDashboard(dashboardRes.dashboard);
       }
 
-    });
-
-  },5000);
-
-  return ()=>{
-
-    clearInterval(interval);
-
+      if (profileRes.success) {
+        setProvider(profileRes.provider);
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error("Failed to load provider dashboard");
+    } finally {
+      setLoading(false);
+    }
   };
-
-},[provider]);
-
-const loadDashboard = async () => {
-  try {
-    setLoading(true);
-
-    const dashboardRes = await getProviderDashboard();
-    const profileRes = await getProviderProfile();
-
-    console.log("Dashboard:", dashboardRes);
-    console.log("Profile:", profileRes);
-
-    if (dashboardRes.success) {
-      setDashboard(dashboardRes.dashboard);
-    }
-
-    if (profileRes.success) {
-      setProvider(profileRes.provider);
-    }
-
-  } catch (error) {
-    console.log(error);
-    toast.error("Failed to load dashboard");
-  } finally {
-    setLoading(false);
-  }
-};
 
   const handleAvailability = async () => {
     try {
@@ -114,51 +93,38 @@ const loadDashboard = async () => {
       });
 
       if (response.success) {
-        toast.success(response.message);
-
+        toast.success(response.message || "Status updated");
         loadDashboard();
       }
     } catch (error) {
       toast.error(
-        error.response?.data?.message ||
-          "Unable to update availability"
+        error.response?.data?.message || "Unable to update status"
       );
     }
   };
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center text-xl font-semibold">
-        Loading Dashboard...
+      <div className="flex h-96 items-center justify-center">
+        <div className="flex flex-col items-center gap-3">
+          <div className="h-10 w-10 animate-spin rounded-full border-4 border-blue-600 border-t-transparent"></div>
+          <p className="text-xs font-bold text-slate-500">Loading Provider Hub...</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="flex min-h-screen bg-slate-100">
+    <div className="space-y-6">
+      <Topbar
+        provider={provider}
+        isAvailable={provider?.isAvailable}
+        onAvailabilityChange={handleAvailability}
+      />
 
-      {/* Sidebar */}
-
-      <Sidebar />
-
-      {/* Main */}
-
-      <div className="flex-1 p-8">
-
-        <Topbar
-          provider={provider}
-          isAvailable={provider?.isAvailable}
-          onAvailabilityChange={handleAvailability}
-        />
-
-        <div className="mt-8">
-
-          <DashboardCards dashboard={dashboard} />
-
-        </div>
-
+      <div className="pt-2">
+        <DashboardCards dashboard={dashboard} />
       </div>
-
     </div>
   );
 };

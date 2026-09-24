@@ -3,10 +3,9 @@ import {
   MapPin,
   Briefcase,
   CalendarPlus,
+  CheckCircle2
 } from "lucide-react";
-
 import { motion } from "framer-motion";
-
 import { useNavigate } from "react-router-dom";
 
 const ProviderCard = ({
@@ -17,209 +16,119 @@ const ProviderCard = ({
 }) => {
   const navigate = useNavigate();
   const image =
-  provider.user?.profileImage &&
-  provider.user.profileImage !== ""
-    ? provider.user.profileImage
-    : `https://ui-avatars.com/api/?name=${encodeURIComponent(
-        provider.user?.name || "Provider"
-      )}&background=2563eb&color=fff&size=400`;
-  
+    provider.user?.profileImage && provider.user.profileImage !== ""
+      ? provider.user.profileImage
+      : `https://ui-avatars.com/api/?name=${encodeURIComponent(
+          provider.user?.name || "Provider"
+        )}&background=2563eb&color=fff&size=400`;
 
+  const handleBookNow = () => {
+    navigate("/service-request", {
+      state: {
+        provider,
+        service,
+        latitude,
+        longitude,
+      },
+    });
+  };
 
+  return (
+    <div className="group overflow-hidden rounded-3xl border border-slate-200/80 bg-white shadow-sm transition-all duration-300 hover:-translate-y-2 hover:shadow-xl hover:shadow-blue-500/10">
+      {/* Top Image Section */}
+      <div className="relative h-60 overflow-hidden bg-slate-100">
+        <img
+          src={image}
+          alt={provider.user?.name || "Provider"}
+          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-transparent opacity-80"></div>
 
-const handleBookNow = () => {
-
-  navigate("/service-request", {
-   state: {
-  provider,
-  service,
-  latitude,
-  longitude,
-},
-  });
-
-};
-
- return (
-  <div className="group overflow-hidden rounded-[30px] border border-slate-200 bg-white shadow-lg transition-all duration-500 hover:-translate-y-3 hover:shadow-2xl">
-    {/* Image */}
-
-    <div className="relative h-64 overflow-hidden">
-
-      <img
-        src={image}
-        alt={provider.user?.name}
-        className="h-full w-full object-cover transition duration-700 group-hover:scale-110"
-      />
-
-      {/* Verified */}
-
-      <div className="absolute left-5 top-5 rounded-full bg-white/95 px-4 py-2 shadow-lg">
-
-        <div className="flex items-center gap-2">
-
-  <Star
-    size={16}
-    className="fill-blue-600 text-blue-600"
-  />
-
-  <span className="font-semibold text-slate-800">
-    Verified
-  </span>
-
-</div>
-      </div>
-
-      {/* Online */}
-
-      <div
-        className={`absolute right-5 top-5 rounded-full px-4 py-2 font-semibold text-white shadow-lg animate-pulse ${
-          provider.isAvailable
-            ? "bg-emerald-500"
-            : "bg-gray-500"
-        }`}
-      >
-        ● {provider.isAvailable ? "ONLINE" : "OFFLINE"}
-      </div>
-
-      {/* Rating */}
-
-      <div className="absolute bottom-5 right-5 rounded-full bg-white px-4 py-2 shadow-lg">
-
-       <div className="flex items-center gap-2">
-
-  <Star
-    size={16}
-    className="fill-yellow-400 text-yellow-400"
-  />
-
-  <span className="font-bold">
-    {Number(provider.rating || 0).toFixed(1)}
-  </span>
-
-</div>
-
-      </div>
-
-    </div>
-
-    {/* Content */}
-
-    <div className="p-7">
-
-      <h2 className="text-3xl font-bold text-slate-900">
-
-        {provider.user?.name}
-
-      </h2>
-
-      <p className="mt-2 font-medium text-indigo-600">
-
-        {provider.service}
-
-      </p>
-
-      {/* Info */}
-
-      <div className="mt-6 space-y-4">
-
-        <div className="flex items-center gap-3 text-slate-600">
-
-          <Briefcase
-            className="text-indigo-600"
-            size={20}
-          />
-
-          {provider.experience} Years Experience
-
+        {/* Verified Badge */}
+        <div className="absolute left-4 top-4 rounded-full bg-white/90 px-3 py-1 shadow-md backdrop-blur-md">
+          <div className="flex items-center gap-1.5 text-xs font-bold text-slate-800">
+            <CheckCircle2 size={14} className="text-blue-600 fill-blue-100" />
+            <span>Verified Pro</span>
+          </div>
         </div>
 
-        <div className="flex items-center gap-3 text-slate-600">
-
-          <MapPin
-            className="text-red-500"
-            size={20}
-          />
-
-          {provider.address || "Nearby"}
-
-        </div>
-
-      </div>
-
-      {/* Stats */}
-
-      <div className="mt-7 grid grid-cols-2 overflow-hidden rounded-2xl bg-slate-50">
-
-        <div className="border-r p-5 text-center">
-
-          <p className="text-sm text-gray-400">
-
-            REVIEWS
-
-          </p>
-
-          <h3 className="mt-2 text-2xl font-bold">
-
-            {provider.totalReviews || 0}
-
-          </h3>
-
-        </div>
-
-        <div className="p-5 text-center">
-
-          <p className="text-sm text-gray-400">
-
-            JOBS
-
-          </p>
-
-          <h3 className="mt-2 text-2xl font-bold">
-
-            {provider.completedJobs || "0+"}
-
-          </h3>
-
-        </div>
-
-      </div>
-
-      {/* Bottom */}
-
-      <div className="mt-8 flex items-end justify-between">
-
-        <div>
-
-          <p className="text-sm uppercase tracking-wide text-gray-400">
-
-            Starting From
-
-          </p>
-
-          <h2 className="mt-2 text-4xl font-black text-indigo-600">
-
-            ₹{provider.pricePerHour}/hr
-
-          </h2>
-
-        </div>
-
-        <button
-          onClick={handleBookNow}
-         className="flex items-center gap-2 rounded-2xl bg-gradient-to-r from-indigo-600 via-blue-600 to-cyan-500 px-8 py-4 font-semibold text-white shadow-lg transition-all duration-300 hover:scale-105 hover:shadow-indigo-400/40"
+        {/* Status Badge */}
+        <div
+          className={`absolute right-4 top-4 flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-bold text-white shadow-md backdrop-blur-md ${
+            provider.isAvailable ? "bg-emerald-500/90" : "bg-slate-600/90"
+          }`}
         >
-          <CalendarPlus size={20} />
+          <span className="h-1.5 w-1.5 rounded-full bg-white animate-pulse"></span>
+          <span>{provider.isAvailable ? "ONLINE" : "OFFLINE"}</span>
+        </div>
 
-          Book Now
-        </button>
-
+        {/* Rating Floating Tag */}
+        <div className="absolute bottom-4 left-4 flex items-center gap-1 rounded-full bg-white/95 px-3 py-1 text-xs font-black text-slate-900 shadow-md">
+          <Star size={14} className="fill-amber-400 text-amber-400" />
+          <span>{Number(provider.rating || 0).toFixed(1)}</span>
+          <span className="text-[10px] font-normal text-slate-500">({provider.totalReviews || 0})</span>
+        </div>
       </div>
 
-    </div>
+      {/* Main Content Section */}
+      <div className="p-6">
+        <div className="flex items-start justify-between gap-2">
+          <div>
+            <h2 className="text-xl font-bold text-slate-900 group-hover:text-blue-600 transition-colors">
+              {provider.user?.name}
+            </h2>
+            <p className="text-xs font-semibold text-blue-600 uppercase tracking-wider mt-0.5">
+              {provider.service}
+            </p>
+          </div>
+        </div>
 
-  </div>
-);
+        {/* Key Info Pills */}
+        <div className="mt-4 space-y-2 text-xs text-slate-600">
+          <div className="flex items-center gap-2">
+            <Briefcase size={14} className="text-blue-600 flex-shrink-0" />
+            <span>{provider.experience || 0} Years Professional Experience</span>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <MapPin size={14} className="text-rose-500 flex-shrink-0" />
+            <span className="truncate">{provider.address || "Serving Local Area"}</span>
+          </div>
+        </div>
+
+        {/* Stats Grid */}
+        <div className="mt-5 grid grid-cols-2 gap-2 rounded-2xl bg-slate-50 p-3 border border-slate-100 text-center">
+          <div>
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Total Reviews</p>
+            <p className="text-base font-bold text-slate-800 mt-0.5">{provider.totalReviews || 0}</p>
+          </div>
+          <div className="border-l border-slate-200">
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Completed Jobs</p>
+            <p className="text-base font-bold text-slate-800 mt-0.5">{provider.completedJobs || "0"}</p>
+          </div>
+        </div>
+
+        {/* Bottom Booking CTA */}
+        <div className="mt-6 flex items-center justify-between border-t border-slate-100 pt-4">
+          <div>
+            <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Starting At</p>
+            <p className="text-xl font-black text-slate-900">
+              ₹{provider.pricePerHour}
+              <span className="text-xs font-medium text-slate-500">/hr</span>
+            </p>
+          </div>
+
+          <button
+            onClick={handleBookNow}
+            className="flex items-center gap-2 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 px-5 py-3 text-xs font-bold text-white shadow-md shadow-blue-600/20 transition-all hover:shadow-lg hover:shadow-blue-600/30 hover:scale-105 active:scale-95 cursor-pointer"
+          >
+            <CalendarPlus size={16} />
+            Book Service
+          </button>
+        </div>
+      </div>
+    </div>
+  );
 };
 
 export default ProviderCard;

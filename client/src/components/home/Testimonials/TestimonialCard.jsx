@@ -1,71 +1,53 @@
 import { motion } from "framer-motion";
 import { FaStar, FaQuoteLeft } from "react-icons/fa";
+import { FiCheckCircle } from "react-icons/fi";
 
 const TestimonialCard = ({ testimonial }) => {
   return (
     <motion.div
-      whileHover={{
-        y: -8,
-        scale: 1.02,
-      }}
-      transition={{ duration: 0.3 }}
-      className="group relative overflow-hidden rounded-3xl border border-gray-100 bg-white p-6 shadow-md transition-all duration-500 hover:shadow-xl"
+      whileHover={{ y: -6, scale: 1.02 }}
+      transition={{ duration: 0.25 }}
+      className="group relative flex flex-col justify-between overflow-hidden rounded-3xl border border-slate-200/80 bg-white p-7 shadow-sm transition-all duration-300 hover:border-blue-300 hover:shadow-xl hover:shadow-blue-500/10"
     >
-      {/* Quote */}
+      <FaQuoteLeft className="absolute right-6 top-6 text-4xl text-blue-50 transition-colors group-hover:text-blue-100/70" />
 
-      <FaQuoteLeft className="absolute right-5 top-5 text-5xl text-blue-50 transition-all duration-500 group-hover:scale-110" />
-
-      {/* Stars */}
-
-      <div className="mb-4 flex">
-
-        {[...Array(testimonial.rating)].map((_, index) => (
-          <FaStar
-            key={index}
-            className="mr-1 text-sm text-yellow-400"
-          />
-        ))}
-
-      </div>
-
-      {/* Review */}
-
-      <p className="text-[15px] italic leading-7 text-gray-600">
-        "{testimonial.review}"
-      </p>
-
-      {/* Divider */}
-
-      <div className="my-6 h-px bg-gray-100"></div>
-
-      {/* User */}
-
-      <div className="flex items-center">
-
-        <img
-          src={testimonial.image}
-          alt={testimonial.name}
-          className="h-14 w-14 rounded-full border-2 border-blue-100 object-cover"
-        />
-
-        <div className="ml-4">
-
-          <h3 className="text-base font-bold text-gray-900">
-            {testimonial.name}
-          </h3>
-
-          <p className="text-sm text-gray-500">
-            {testimonial.city}
-          </p>
-
+      <div>
+        {/* Rating Stars */}
+        <div className="mb-4 flex items-center gap-1">
+          {[...Array(testimonial.rating || 5)].map((_, index) => (
+            <FaStar
+              key={index}
+              className="text-sm text-amber-400"
+            />
+          ))}
         </div>
 
+        {/* Review Content */}
+        <p className="relative z-10 text-sm leading-relaxed text-slate-600">
+          "{testimonial.review}"
+        </p>
       </div>
 
-      {/* Bottom Line */}
+      <div className="mt-6 border-t border-slate-100 pt-5 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <img
+            src={testimonial.image}
+            alt={testimonial.name}
+            className="h-11 w-11 rounded-full border border-blue-200 object-cover"
+          />
+          <div>
+            <h3 className="text-sm font-bold text-slate-900 flex items-center gap-1.5">
+              {testimonial.name}
+              <FiCheckCircle className="text-xs text-blue-600" />
+            </h3>
+            <p className="text-xs text-slate-400">{testimonial.city || "Verified Customer"}</p>
+          </div>
+        </div>
 
-      <div className="absolute bottom-0 left-0 h-1 w-0 bg-blue-600 transition-all duration-500 group-hover:w-full"></div>
-
+        <span className="rounded-full bg-blue-50 px-2.5 py-1 text-[10px] font-bold text-blue-600">
+          Verified Booking
+        </span>
+      </div>
     </motion.div>
   );
 };
